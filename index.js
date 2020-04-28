@@ -10,12 +10,19 @@ var workSpaceId;
 var configVersion;
 var retryDuration = 1000;
 var retryLimit = 3;
+var terraformHost;
 async function main() {
     try {
         token = core.getInput('terraformToken');
         organizationName = core.getInput('terraformOrg');
         workSpaceName = core.getInput('terraformWorkspace');
         configFilePath = core.getInput('configFilePath');
+        terraformHost = core.getInput('terraformHost');
+        console.log("organizationName:"+organizationName);
+        console.log("workSpaceName:"+workSpaceName);
+        console.log("configFilePath:"+configFilePath);
+        console.log("terraformHost:"+terraformHost);
+
         options = {
             headers: {
                 'Content-Type': 'application/vnd.api+json',
