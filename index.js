@@ -234,7 +234,7 @@ async function run(){
     }
 }
 
-async function sendFeedback(runId){
+async function sendFeedback(){
     var checkStatus = true;
 
   do{
@@ -254,7 +254,7 @@ async function sendFeedback(runId){
 
 }
 
-async function checkRunStatus(runId){
+async function checkRunStatus(){
 
     try{
         const terraformRunStatusEndpoint = "https://"+terraformHost+"/api/v2/runs/"+runId;
