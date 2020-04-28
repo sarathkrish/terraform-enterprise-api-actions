@@ -86,7 +86,7 @@ async function createConfigVersion(options) {
         const body = { data: { type: "configuration-versions", attributes: { "auto-queue-runs": false } } };
         const terraformConfigVersionsEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/configuration-versions";
         console.log("terraformConfigVersionsEndpoint:"+terraformConfigVersionsEndpoint);
-        res = await axios.post(terraformConfigVersionsEndpoint, JSON.stringify(body));
+        res = await axios.post(terraformConfigVersionsEndpoint, body, options);
         const configVersion = res.data.data;
         console.log("create config version response:"+ res.data.data);
         return { id: configVersion.id, uploadUrl: configVersion.attributes['upload-url'] };
@@ -129,7 +129,7 @@ async function getConfigVersionStatus(configVersionId) {
     try {
         const configVersionStatusUrl = "https://" + terraformHost + "/api/v2/workspaces/configuration-versions/"+configVersionId;
         console.log("configVersionStatusUrl:"+configVersionStatusUrl);
-        const res = await axios.get(configVersionStatusUrl);
+        const res = await axios.get(configVersionStatusUrl, options);
         console.log("configVersionStatus Response:"+res.data.data);
         return res.data.data.attributes.status;
     } catch (err) {
