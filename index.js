@@ -12,7 +12,7 @@ var configVersion;
 var retryDuration = 1000;
 var retryLimit = 3;
 var terraformHost;
-var attributes;
+var terraformVariables;
 async function main() {
     try {
         token = core.getInput('terraformToken');
@@ -20,12 +20,12 @@ async function main() {
         workSpaceName = core.getInput('terraformWorkspace');
         configFilePath = core.getInput('configFilePath');
         terraformHost = core.getInput('terraformHost');
-        attributes = core.getInput('attributes');
+        terraformVariables = core.getInput('terraformVariables');
         console.log("organizationName:"+organizationName);
         console.log("workSpaceName:"+workSpaceName);
         console.log("configFilePath:"+configFilePath);
         console.log("terraformHost:"+terraformHost);
-        console.log("attributes:"+attributes);
+        console.log("terraformVariables:"+terraformVariables);
 
         options = {
             headers: {
@@ -89,7 +89,7 @@ async function setVariables() {
   try{
     const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";
     console.log("terraformVariableEndpoint:"+terraformVariableEndpoint);
-    const attributeArray = JSON.parse(attributes);
+    const attributeArray = JSON.parse(terraformVariables);
 
     for(var i=0; i < attributeArray.length; i++ ){
         console.log("attribute:"+JSON.stringify(attributeArray[i]));

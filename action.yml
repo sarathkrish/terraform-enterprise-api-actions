@@ -14,8 +14,9 @@ inputs:
   configFilePath:
     description: 'Config (.tar.gz) to upload.'
     required: true
-  
-
+  terraformVariables:
+    description: 'Terraform variables.'
+    required: true
 runs:
   using: 'node12'
   main: 'index.js'
