@@ -80,7 +80,7 @@ async function createWorkSpace() {
     }
 }
 
-async function createConfigVersion(options) {
+async function createConfigVersion() {
     try {
 
         const body = { data: { type: "configuration-versions", attributes: { "auto-queue-runs": false } } };
