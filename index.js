@@ -64,9 +64,13 @@ async function main() {
 
 async function createWorkSpace() {
     try {
-        const terraformWorkSpaceEndpoint = "https://" + terraformHost + "/api/v2/organizations/" + organizationName + "/workspaces/" + workSpaceName;
+        //const terraformWorkSpaceEndpoint = "https://" + terraformHost + "/api/v2/organizations/" + organizationName + "/workspaces/" + workSpaceName;
+        let request = { data : { attributes: { name : workSpaceName, type: "workspaces"}}};
+        console.log("request:" + JSON.stringify(request));
+        const terraformWorkSpaceEndpoint = "https://"+terraformHost+"/api/v2/organizations/"+organizationName+"/workspaces";
+       
         console.log("terraformWorkSpaceEndpoint:"+terraformWorkSpaceEndpoint); 
-        const response = await axios.get(terraformWorkSpaceEndpoint, options);
+        const response = await axios.post(terraformWorkSpaceEndpoint, request, options);
         const workSpaceId = response.data.data.id;
         console.log("workSpaceId:" + workSpaceId);
         return workSpaceId;
