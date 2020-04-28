@@ -86,6 +86,7 @@ async function createConfigVersion(options) {
         const body = { data: { type: "configuration-versions", attributes: { "auto-queue-runs": false } } };
         const terraformConfigVersionsEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/configuration-versions";
         console.log("terraformConfigVersionsEndpoint:"+terraformConfigVersionsEndpoint);
+        console.log("terraformConfigVersions request:"+JSON.stringify(body));
         res = await axios.post(terraformConfigVersionsEndpoint, JSON.stringify(body), options);
         const configVersion = res.data.data;
         console.log("create config version response:"+ res.data.data);
