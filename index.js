@@ -41,7 +41,7 @@ async function main() {
 
         // Step 1 - Create WorkSpace
 
-        await createWorkSpace();
+        workSpaceId = await createWorkSpace();
 
         // Step 2 - Set Variables
 
@@ -49,7 +49,7 @@ async function main() {
 
         // Step 3 - Create Config Version
 
-        await createConfigVersion();
+        configVersion = await createConfigVersion();
   
         // Step 4 - Upload Config
 
