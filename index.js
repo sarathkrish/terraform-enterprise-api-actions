@@ -1,6 +1,7 @@
 const core = require('@actions/core')
 const axios = require('axios');
 const fs = require('fs');
+// Setting SSL OFF 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 var token;
 var organizationName;
@@ -14,6 +15,7 @@ var retryLimit = 3;
 var terraformHost;
 var terraformVariables;
 var sentinelPolicySetId;
+var runId;
 async function main() {
     try {
         token = core.getInput('terraformToken');
@@ -37,7 +39,9 @@ async function main() {
                 'Authorization': 'Bearer ' + token
             }
         };
-
+  
+         // Step 0
+         // Clone Repo and Create Zip
 
         // Step 1 - Create WorkSpace
 
@@ -61,11 +65,18 @@ async function main() {
 
         // Step 6 - Run
 
-        // Step 7 - Get Cost estimates
+        runId = await run();
 
-        // Step 8 - Optionally apply plan
+        // Step 7 - Check status and Update ServiceNow
+        
+        await sendFeedback();
+        
+        // Step 8 - Get Cost estimates
+
+        // Step 9 - Optionally apply plan
 
     } catch (error) {
+        // Log Incident 
         core.setFailed(error.message);
     }
 }
@@ -188,6 +199,68 @@ async function attachSentinelPolicySet(){
         console.log("Error in attachPolicySet:"+err.message);
         throw new Error(`Error Attaching Policy Set ${err.message}`);
     }
+}
+
+async function run(){
+ try{
+    const terraformRunEndpoint = "https://"+terraformHost+"/api/v2/runs";
+    let request = { data : { 
+                    attributes: { "is-destroy" : false, "message" : "Pipeline invocation" },
+                    type: "runs",
+                    relationships: {
+                      workspace: {
+                        data: {
+                          type: "workspaces",
+                          id: workSpaceId
+                        }
+                      }
+                    }
+                   }};
+    console.log("run request:" + JSON.stringify(request));
+    const res = await axios.post(terraformRunEndpoint, request,  options);
+    console.log("run response:"+res.data.data);
+    const runId = res.data.data.id;
+     return runId;
+    }catch(err){
+        console.log("Error in run:"+err.message);
+        throw new Error(`Error in run ${err.message}`);
+    }
+}
+
+async function sendFeedback(runId){
+    var checkStatus = true;
+
+  do{
+    await sleep(1000);
+    const status = await checkRunStatus(runId);
+    if("errored" == status || "policy_override" == status){
+        checkStatus = false;
+        console.log("Plan execution failed or sentinel policy failed");
+    }
+    else if("finished" == status) {
+        checkStatus = false;
+        console.log("Plan execution completed successfully");
+
+    }
+
+  }while(checkStatus);
+
+}
+
+async function checkRunStatus(runId){
+
+    try{
+        const terraformRunStatusEndpoint = "https://"+terraformHost+"/api/v2/runs/"+runId;
+        console.log("terraformRunStatusEndpoint:"+terraformRunStatusEndpoint);
+        const res = await axios.post(terraformRunStatusEndpoint, options);
+        console.log("run response:"+res.data.data);
+        return res.data.data.attributes.status;
+    }
+    catch(err){
+        console.log("Error in checking run status:"+err.message);
+        throw new Error(`Error in checking run status${err.message}`);
+    }
+
 }
 
 main()
