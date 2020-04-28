@@ -35,6 +35,7 @@ async function main() {
         console.log("terraformVariables:"+terraformVariables);
         console.log("sentinelPolicySetId:"+sentinelPolicySetId);
 
+        terraformVariables = JSON.parse(terraformVariables);
         envVariables =  [{"key":"AWS_ACCESS_KEY_ID","value":Client_Id,"category":"env","hcl":false,"sensitive":true},
                          {"key":"AWS_SECRET_ACCESS_KEY","value":Secret_Id,"category":"env","hcl":false,"sensitive":true}
                         ];
@@ -115,15 +116,10 @@ async function setVariables(terraformVariables) {
     console.log("terraformVariables:"+terraformVariables);  
     const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";
     console.log("terraformVariableEndpoint:"+terraformVariableEndpoint);
-    const attributeArray = JSON.parse(terraformVariables);
 
-    for(var i=0; i < attributeArray.length; i++ ){
-        console.log("attribute:"+JSON.stringify(attributeArray[i]));
-       // var req = {};
-       // req.data = {};
-       // req.data.type = "vars";
-       // req.data.attribute = attributeArray[i];
-        var req = {data: {type: "vars", attributes: attributeArray[i] }};
+    for(var i=0; i < terraformVariables.length; i++ ){
+        console.log("attribute:"+JSON.stringify(terraformVariables[i]));
+        var req = {data: {type: "vars", attributes: terraformVariables[i] }};
         console.log("Request:"+ JSON.stringify(req));
         // Invoke 
         const response = await axios.post(terraformVariableEndpoint, req, options);
