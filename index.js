@@ -93,10 +93,11 @@ async function setVariables() {
 
     for(var i=0; i < attributeArray.length; i++ ){
         console.log("attribute:"+JSON.stringify(attributeArray[i]));
-        var req = {};
-        req.data = {};
-        req.data.type = "vars";
-        req.data.attribute = attributeArray[i];
+       // var req = {};
+       // req.data = {};
+       // req.data.type = "vars";
+       // req.data.attribute = attributeArray[i];
+        var req = {data: {type: "vars", attributes: attributeArray[i] }};
         console.log("Request:"+ JSON.stringify(req));
         // Invoke 
         const response = await axios.post(terraformVariableEndpoint, req, options);
