@@ -1,0 +1,25 @@
+{
+  "name": "terraform-enterprise-api-actions",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarathkrish/terraform-enterprise-api-actions.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sarathkrish/terraform-enterprise-api-actions/issues"
+  },
+  "homepage": "https://github.com/sarathkrish/terraform-enterprise-api-actions#readme",
+  "dependencies": {
+    "@actions/core": "^1.2.3",
+    "axios": "^0.19.2",
+    "fs": "0.0.1-security"
+  }
+}

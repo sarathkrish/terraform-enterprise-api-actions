@@ -1,0 +1,25 @@
+# action.yml
+name: 'Terraform Enterprise API Actions'
+description: 'Create Workspace, Upload Code and Run'
+inputs:
+  terraformToken:
+    description: 'Terraform Cloud Token.'
+    required: true
+  terraformOrg:
+    description: 'Terraform Cloud Organization.'
+    required: true
+  terraformWorkspace:
+    description: 'Terraform Cloud Workspace.'
+    required: true
+  configFilePath:
+    description: 'Config (.tar.gz) to upload.'
+    required: true
+  
+
+runs:
+  using: 'node12'
+  main: 'index.js'
+
+branding:
+  icon: 'play'  
+  color: 'green'
