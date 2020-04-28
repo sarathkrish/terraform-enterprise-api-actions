@@ -16,6 +16,7 @@ var terraformHost;
 var terraformVariables;
 var sentinelPolicySetId;
 var runId;
+var envVariables;
 async function main() {
     try {
         token = core.getInput('terraformToken');
@@ -25,6 +26,8 @@ async function main() {
         terraformHost = core.getInput('terraformHost');
         terraformVariables = core.getInput('terraformVariables');
         sentinelPolicySetId = core.getInput('sentinelPolicySetId');
+        const Client_Id = core.getInput('Client_Id');
+        const Secret_Id = core.getInput('Secret_Id');
         console.log("organizationName:"+organizationName);
         console.log("workSpaceName:"+workSpaceName);
         console.log("configFilePath:"+configFilePath);
@@ -32,6 +35,10 @@ async function main() {
         console.log("terraformVariables:"+terraformVariables);
         console.log("sentinelPolicySetId:"+sentinelPolicySetId);
 
+        envVariables =  [{"key":"AWS_ACCESS_KEY_ID","value":Client_Id,"category":"env","hcl":false,"sensitive":true},
+                         {"key":"AWS_SECRET_ACCESS_KEY","value":Secret_Id,"category":"env","hcl":false,"sensitive":true}
+                        ];
+        terraformVariables = terraformVariables.concat(envVariables);
 
         options = {
             headers: {
