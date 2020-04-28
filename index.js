@@ -12,6 +12,7 @@ var configVersion;
 var retryDuration = 1000;
 var retryLimit = 3;
 var terraformHost;
+var attributes;
 async function main() {
     try {
         token = core.getInput('terraformToken');
@@ -19,10 +20,12 @@ async function main() {
         workSpaceName = core.getInput('terraformWorkspace');
         configFilePath = core.getInput('configFilePath');
         terraformHost = core.getInput('terraformHost');
+        attributes = core.getInput('attributes');
         console.log("organizationName:"+organizationName);
         console.log("workSpaceName:"+workSpaceName);
         console.log("configFilePath:"+configFilePath);
         console.log("terraformHost:"+terraformHost);
+        console.log("attributes:"+attributes);
 
         options = {
             headers: {
@@ -38,6 +41,8 @@ async function main() {
         console.log("workSpaceId:"+workSpaceId);
 
         // Step 2 - Set Variables
+
+        await setVariables();
 
         // Step 3 - Create Config Version
 
@@ -78,6 +83,31 @@ async function createWorkSpace() {
         console.log(`Error creating workspace ${err}`)
         throw new Error(`Error creating workspace ${err.message}`)
     }
+}
+
+async function setVariables() {
+  try{
+    const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";
+    console.log("terraformVariableEndpoint:"+terraformVariableEndpoint);
+    const attributeArray = JSON.parse(attributes);
+
+    for(var i=0; i < attributeArray.length; i++ ){
+        console.log("attribute:"+JSON.stringify(attributeArray[i]));
+        var req = {};
+        req.data = {};
+        req.data.type = "vars";
+        req.data.attribute = attributeArray[i];
+        console.log("Request:"+ JSON.stringify(req));
+        // Invoke 
+        const response = await axios.post(terraformVariableEndpoint, req, options);
+        console.log("Set Variable Response:"+ JSON.stringify(response.data));
+      }
+
+
+  }catch(err){
+    console.log(`Error setting variables${err}`)
+    throw new Error(`Error setting variables ${err.message}`)
+  }
 }
 
 async function createConfigVersion() {
