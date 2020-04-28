@@ -260,7 +260,7 @@ async function checkRunStatus(){
     try{
         const terraformRunStatusEndpoint = "https://"+terraformHost+"/api/v2/runs/"+runId;
         console.log("terraformRunStatusEndpoint:"+terraformRunStatusEndpoint);
-        const res = await axios.post(terraformRunStatusEndpoint, options);
+        const res = await axios.get(terraformRunStatusEndpoint, options);
         console.log("run response:"+res.data.data);
         return res.data.data.attributes.status;
     }
