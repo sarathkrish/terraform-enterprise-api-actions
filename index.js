@@ -38,7 +38,7 @@ async function main() {
         envVariables =  [{"key":"AWS_ACCESS_KEY_ID","value":Client_Id,"category":"env","hcl":false,"sensitive":true},
                          {"key":"AWS_SECRET_ACCESS_KEY","value":Secret_Id,"category":"env","hcl":false,"sensitive":true}
                         ];
-        terraformVariables = terraformVariables.concat(envVariables);
+        //terraformVariables = terraformVariables.concat(envVariables);
 
         options = {
             headers: {
@@ -56,7 +56,11 @@ async function main() {
 
         // Step 2 - Set Variables
 
-        await setVariables();
+        await setVariables(terraformVariables);
+
+        // Step 2.1 - Set Environment Variable
+
+        await setVariables(envVariables);
 
         // Step 3 - Create Config Version
 
@@ -106,11 +110,11 @@ async function createWorkSpace() {
     }
 }
 
-async function setVariables() {
+async function setVariables(terraformVariables) {
   try{
+    console.log("terraformVariables:"+terraformVariables);  
     const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";
     console.log("terraformVariableEndpoint:"+terraformVariableEndpoint);
-    console.log("terraformVariables:"+terraformVariables);
     const attributeArray = JSON.parse(terraformVariables);
 
     for(var i=0; i < attributeArray.length; i++ ){
