@@ -110,7 +110,7 @@ async function uploadConfiguration() {
         while (status === 'pending') {
             if (counter < retryLimit) {
                 await sleep(retryDuration);
-                status = await this.getConfigVersionStatus(configVersion.id);
+                status = await getConfigVersionStatus(configVersion.id);
                 counter += 1;
             } else {
                 throw new Error(`Config version status was still pending after ${retryLimit} attempts.`);
