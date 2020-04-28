@@ -13,6 +13,7 @@ var retryDuration = 1000;
 var retryLimit = 3;
 var terraformHost;
 var terraformVariables;
+var sentinelPolicySetId;
 async function main() {
     try {
         token = core.getInput('terraformToken');
@@ -21,11 +22,14 @@ async function main() {
         configFilePath = core.getInput('configFilePath');
         terraformHost = core.getInput('terraformHost');
         terraformVariables = core.getInput('terraformVariables');
+        sentinelPolicySetId = core.getInput('sentinelPolicySetId');
         console.log("organizationName:"+organizationName);
         console.log("workSpaceName:"+workSpaceName);
         console.log("configFilePath:"+configFilePath);
         console.log("terraformHost:"+terraformHost);
         console.log("terraformVariables:"+terraformVariables);
+        console.log("sentinelPolicySetId:"+sentinelPolicySetId);
+
 
         options = {
             headers: {
@@ -37,8 +41,7 @@ async function main() {
 
         // Step 1 - Create WorkSpace
 
-        workSpaceId = await createWorkSpace();
-        console.log("workSpaceId:"+workSpaceId);
+        await createWorkSpace();
 
         // Step 2 - Set Variables
 
@@ -46,15 +49,15 @@ async function main() {
 
         // Step 3 - Create Config Version
 
-        configVersion = await createConfigVersion();
-        console.log("configVersion:"+configVersion);
+        await createConfigVersion();
   
-
         // Step 4 - Upload Config
 
         await uploadConfiguration();
 
         // Step 5 - Attach Sentinel Policies
+
+        await attachSentinelPolicySet();
 
         // Step 6 - Run
 
@@ -165,12 +168,26 @@ async function getConfigVersionStatus(configVersionId) {
         console.log("configVersionStatus Response:"+res.data.data);
         return res.data.data.attributes.status;
     } catch (err) {
+        console.log("Error in getConfigVersionStatus:"+err.message);
         throw new Error(`Error getting configuration version: ${err.message}`);
     }
 }
 
 async function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function attachSentinelPolicySet(){
+    try{
+        const attachPolicyUrl = "https://" + terraformHost + "/api/v2/policy-sets/"+sentinelPolicySetId+"/relationships/workspaces";
+        let req = { data : [ {id: workSpaceId, type: "workspaces" }]};
+        console.log("attachSentinelPolicySet req:"+JSON.stringify(req));
+        const res = await axios.post(attachPolicyUrl, req,  options);
+        console.log("attachSentinelPolicySet:"+res.data.data);
+    }catch(err){
+        console.log("Error in attachPolicySet:"+err.message);
+        throw new Error(`Error Attaching Policy Set ${err.message}`);
+    }
 }
 
 main()

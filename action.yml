@@ -17,6 +17,9 @@ inputs:
   terraformVariables:
     description: 'Terraform variables.'
     required: true
+  sentinelPolicySetId:
+     description: 'Sentinel PolicySetId.'
+     required: true
 runs:
   using: 'node12'
   main: 'index.js'
