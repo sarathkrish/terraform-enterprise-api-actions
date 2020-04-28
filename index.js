@@ -110,6 +110,7 @@ async function setVariables() {
   try{
     const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";
     console.log("terraformVariableEndpoint:"+terraformVariableEndpoint);
+    console.log("terraformVariables:"+terraformVariables);
     const attributeArray = JSON.parse(terraformVariables);
 
     for(var i=0; i < attributeArray.length; i++ ){
