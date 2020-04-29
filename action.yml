@@ -15,10 +15,19 @@ inputs:
     description: 'Config (.tar.gz) to upload.'
     required: true
   terraformVariables:
-    description: 'Terraform variables.'
+    description: 'Terraform variables'
     required: true
-  terraformEnvVariables:
-     description: 'Terraform Env variables.'
+  Client_Id:
+     description: 'ARM_CLIENT_ID'
+     required: true
+  Secret_Id:
+     description: 'ARM_CLIENT_SECRET'
+     required: true
+  Tenant_Id:
+     description: 'ARM_TENANT_ID'
+     required: true
+  Subscription_Id:
+     description: 'ARM_SUBSCRIPTION_ID'
      required: true
   sentinelPolicySetId:
      description: 'Sentinel PolicySetId.'

@@ -1,7 +1,7 @@
 const core = require('@actions/core')
 const axios = require('axios');
 const fs = require('fs');
-// Setting SSL OFF 
+// Setting SSL OFF // Need to remove this on prod
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 var token;
 var organizationName;
@@ -17,6 +17,8 @@ var terraformVariables;
 var sentinelPolicySetId;
 var runId;
 var terraformEnvVariables;
+
+
 async function main() {
     try {
         token = core.getInput('terraformToken');
@@ -25,10 +27,14 @@ async function main() {
         configFilePath = core.getInput('configFilePath');
         terraformHost = core.getInput('terraformHost');
         terraformVariables = core.getInput('terraformVariables');
-        terraformEnvVariables = core.getInput('terraformEnvVariables');
         sentinelPolicySetId = core.getInput('sentinelPolicySetId');
-        //const Client_Id = core.getInput('Client_Id');
-       // const Secret_Id = core.getInput('Secret_Id');
+        const Client_Id = core.getInput('Client_Id');
+        const Secret_Id = core.getInput('Secret_Id');
+        const Tenant_Id = core.getInput('Tenant_Id');
+        const Subscription_Id = core.getInput('Subscription_Id');
+
+        // Log Input Variables
+        console.log("**************Input*********************");
         console.log("organizationName:"+organizationName);
         console.log("workSpaceName:"+workSpaceName);
         console.log("configFilePath:"+configFilePath);
@@ -36,20 +42,19 @@ async function main() {
         console.log("terraformVariables:"+terraformVariables);
         console.log("terraformEnvVariables:"+terraformEnvVariables);
         console.log("sentinelPolicySetId:"+sentinelPolicySetId);
+        console.log("**************Input*********************");
 
         terraformVariables = JSON.parse(terraformVariables);
-        terraformEnvVariables = JSON.parse(JSON.stringify(terraformEnvVariables));
 
-        //console.log("terraformEnvVariables:"+terraformEnvVariables);
-        console.log("terraformEnvVariables:"+terraformEnvVariables[0]);
-        console.log("terraformEnvVariables:"+terraformEnvVariables[1]);
-        console.log("terraformEnvVariables:"+JSON.stringify(terraformEnvVariables));
-       // console.log("terraformEnvVariables:"+terraformEnvVariables);
-      //  envVariables =  [{"key":"AWS_ACCESS_KEY_ID","value":Client_Id,"category":"env","hcl":false,"sensitive":true},
-      //                  {"key":"AWS_SECRET_ACCESS_KEY","value":Secret_Id,"category":"env","hcl":false,"sensitive":true}
-      //                ];
-        //terraformVariables = terraformVariables.concat(envVariables);
+        // Azure Credentials as env params
 
+        envVariables =  [{"key":"ARM_CLIENT_ID","value":Client_Id,"category":"env","hcl":false,"sensitive":true},
+                        {"key":"ARM_CLIENT_SECRET","value":Secret_Id,"category":"env","hcl":false,"sensitive":true},
+                        {"key":"ARM_TENANT_ID","value":Tenant_Id,"category":"env","hcl":false,"sensitive":true},
+                        {"key":"ARM_SUBSCRIPTION_ID","value":Subscription_Id,"category":"env","hcl":false,"sensitive":true}
+                     ];
+
+        // Header 
         options = {
             headers: {
                 'Content-Type': 'application/vnd.api+json',
@@ -57,8 +62,6 @@ async function main() {
             }
         };
   
-         // Step 0
-         // Clone Repo and Create Zip
 
         // Step 1 - Create WorkSpace
 
@@ -70,7 +73,7 @@ async function main() {
 
         // Step 2.1 - Set Environment Variable
 
-        await setVariables(terraformEnvVariables);
+        await setVariables(envVariables);
 
         // Step 3 - Create Config Version
 
@@ -124,7 +127,6 @@ async function setVariables(terraformVariables) {
     const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";
     console.log("terraformVariableEndpoint:"+terraformVariableEndpoint);
     console.log("terraformVariables:"+terraformVariables);  
-    console.log("Variable Array length:"+terraformVariables.length);
     for(var i=0; i < terraformVariables.length; i++ ){
         console.log("attribute:"+JSON.stringify(terraformVariables[i]));
         var req = {data: {type: "vars", attributes: terraformVariables[i] }};
