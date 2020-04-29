@@ -37,7 +37,7 @@ async function main() {
         console.log("sentinelPolicySetId:"+sentinelPolicySetId);
 
         terraformVariables = JSON.parse(terraformVariables);
-        console.log("terraformEnvVariables:"+SON.stringify(terraformEnvVariables));
+        console.log("terraformEnvVariables:"+JSON.stringify(terraformEnvVariables));
         terraformEnvVariables = JSON.parse(JSON.stringify(terraformEnvVariables));
        // console.log("terraformEnvVariables:"+terraformEnvVariables);
       //  envVariables =  [{"key":"AWS_ACCESS_KEY_ID","value":Client_Id,"category":"env","hcl":false,"sensitive":true},
