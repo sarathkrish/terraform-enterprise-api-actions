@@ -34,11 +34,13 @@ async function main() {
         console.log("configFilePath:"+configFilePath);
         console.log("terraformHost:"+terraformHost);
         console.log("terraformVariables:"+terraformVariables);
+        console.log("terraformEnvVariables:"+terraformEnvVariables);
         console.log("sentinelPolicySetId:"+sentinelPolicySetId);
 
         terraformVariables = JSON.parse(terraformVariables);
-        console.log("terraformEnvVariables:"+JSON.stringify(terraformEnvVariables));
-        terraformEnvVariables = JSON.parse(JSON.stringify(terraformEnvVariables));
+        terraformEnvVariables = JSON.parse(terraformEnvVariables);
+        
+        console.log("terraformEnvVariables:"+terraformEnvVariables);
        // console.log("terraformEnvVariables:"+terraformEnvVariables);
       //  envVariables =  [{"key":"AWS_ACCESS_KEY_ID","value":Client_Id,"category":"env","hcl":false,"sensitive":true},
       //                  {"key":"AWS_SECRET_ACCESS_KEY","value":Secret_Id,"category":"env","hcl":false,"sensitive":true}
@@ -116,10 +118,10 @@ async function createWorkSpace() {
 
 async function setVariables(terraformVariables) {
   try{
-    console.log("terraformVariables:"+terraformVariables);  
     const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";
     console.log("terraformVariableEndpoint:"+terraformVariableEndpoint);
-
+    console.log("terraformVariables:"+terraformVariables);  
+    console.log("Variable Array length:"+terraformVariables.length);
     for(var i=0; i < terraformVariables.length; i++ ){
         console.log("attribute:"+JSON.stringify(terraformVariables[i]));
         var req = {data: {type: "vars", attributes: terraformVariables[i] }};
