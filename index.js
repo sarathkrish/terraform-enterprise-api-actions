@@ -38,7 +38,7 @@ async function main() {
         console.log("sentinelPolicySetId:"+sentinelPolicySetId);
 
         terraformVariables = JSON.parse(terraformVariables);
-        terraformEnvVariables = JSON.parse(terraformEnvVariables);
+        terraformEnvVariables = JSON.parse(JSON.stringify(terraformEnvVariables));
 
         //console.log("terraformEnvVariables:"+terraformEnvVariables);
         console.log("terraformEnvVariables:"+terraformEnvVariables[0]);
