@@ -40,7 +40,7 @@ async function main() {
         terraformVariables = JSON.parse(terraformVariables);
         terraformEnvVariables = JSON.parse(terraformEnvVariables);
 
-        console.log("terraformEnvVariables:"+terraformEnvVariables);
+        //console.log("terraformEnvVariables:"+terraformEnvVariables);
         console.log("terraformEnvVariables:"+terraformEnvVariables[0]);
         console.log("terraformEnvVariables:"+terraformEnvVariables[1]);
         console.log("terraformEnvVariables:"+JSON.stringify(terraformEnvVariables));
