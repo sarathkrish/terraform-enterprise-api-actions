@@ -243,10 +243,12 @@ async function sendFeedback(){
     const status = await checkRunStatus(runId);
 
    if("errored" == status){
-    console.log("Plan execution failed");
+        checkStatus = false;
+        console.log("Plan execution failed");
    }
    else if("discarded" == status) {
-    console.log("Plan execution discarded manually");
+        checkStatus = false;
+        console.log("Plan execution discarded manually");
    }
    else if("policy_override" == status){
         checkStatus = false;
