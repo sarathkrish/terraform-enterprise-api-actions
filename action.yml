@@ -2,6 +2,9 @@
 name: 'Terraform Enterprise API Actions'
 description: 'Create Workspace, Upload Code and Run'
 inputs:
+  terraformHost:
+    description: 'Terraform Cloud Token.'
+    required: true
   terraformToken:
     description: 'Terraform Cloud Token.'
     required: true
@@ -17,6 +20,9 @@ inputs:
   terraformVariables:
     description: 'Terraform variables'
     required: true
+  sentinelPolicySetId:
+     description: 'Sentinel PolicySetId.'
+     required: true
   Client_Id:
      description: 'ARM_CLIENT_ID'
      required: true
@@ -28,9 +34,6 @@ inputs:
      required: true
   Subscription_Id:
      description: 'ARM_SUBSCRIPTION_ID'
-     required: true
-  sentinelPolicySetId:
-     description: 'Sentinel PolicySetId.'
      required: true
 runs:
   using: 'node12'
