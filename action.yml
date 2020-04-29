@@ -17,15 +17,12 @@ inputs:
   terraformVariables:
     description: 'Terraform variables.'
     required: true
+  terraformEnvVariables:
+     description: 'Terraform Env variables.'
+     required: true
   sentinelPolicySetId:
      description: 'Sentinel PolicySetId.'
      required: true
-  Client_Id:
-    description: 'Client Id.'
-    required: true
-  Secret_Id:
-    description: 'Secret Id.'
-    required: true
 runs:
   using: 'node12'
   main: 'index.js'

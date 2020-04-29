@@ -16,7 +16,7 @@ var terraformHost;
 var terraformVariables;
 var sentinelPolicySetId;
 var runId;
-var envVariables;
+var terraformEnvVariables;
 async function main() {
     try {
         token = core.getInput('terraformToken');
@@ -25,9 +25,10 @@ async function main() {
         configFilePath = core.getInput('configFilePath');
         terraformHost = core.getInput('terraformHost');
         terraformVariables = core.getInput('terraformVariables');
+        terraformEnvVariables = core.getInput('terraformEnvVariables');
         sentinelPolicySetId = core.getInput('sentinelPolicySetId');
-        const Client_Id = core.getInput('Client_Id');
-        const Secret_Id = core.getInput('Secret_Id');
+        //const Client_Id = core.getInput('Client_Id');
+       // const Secret_Id = core.getInput('Secret_Id');
         console.log("organizationName:"+organizationName);
         console.log("workSpaceName:"+workSpaceName);
         console.log("configFilePath:"+configFilePath);
@@ -36,9 +37,10 @@ async function main() {
         console.log("sentinelPolicySetId:"+sentinelPolicySetId);
 
         terraformVariables = JSON.parse(terraformVariables);
-        envVariables =  [{"key":"AWS_ACCESS_KEY_ID","value":Client_Id,"category":"env","hcl":false,"sensitive":true},
-                         {"key":"AWS_SECRET_ACCESS_KEY","value":Secret_Id,"category":"env","hcl":false,"sensitive":true}
-                        ];
+        terraformEnvVariables = JSON.parse(terraformEnvVariables);
+      //  envVariables =  [{"key":"AWS_ACCESS_KEY_ID","value":Client_Id,"category":"env","hcl":false,"sensitive":true},
+      //                  {"key":"AWS_SECRET_ACCESS_KEY","value":Secret_Id,"category":"env","hcl":false,"sensitive":true}
+      //                ];
         //terraformVariables = terraformVariables.concat(envVariables);
 
         options = {
@@ -61,7 +63,7 @@ async function main() {
 
         // Step 2.1 - Set Environment Variable
 
-        await setVariables(envVariables);
+        await setVariables(terraformEnvVariables);
 
         // Step 3 - Create Config Version
 
@@ -95,7 +97,6 @@ async function main() {
 
 async function createWorkSpace() {
     try {
-        //const terraformWorkSpaceEndpoint = "https://" + terraformHost + "/api/v2/organizations/" + organizationName + "/workspaces/" + workSpaceName;
         let request = { data : { attributes: { name : workSpaceName, type: "workspaces" , "auto-apply" : true}}};
         console.log("request:" + JSON.stringify(request));
         const terraformWorkSpaceEndpoint = "https://"+terraformHost+"/api/v2/organizations/"+organizationName+"/workspaces";
