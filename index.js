@@ -96,7 +96,7 @@ async function main() {
 async function createWorkSpace() {
     try {
         //const terraformWorkSpaceEndpoint = "https://" + terraformHost + "/api/v2/organizations/" + organizationName + "/workspaces/" + workSpaceName;
-        let request = { data : { attributes: { name : workSpaceName, type: "workspaces"}}};
+        let request = { data : { attributes: { name : workSpaceName, type: "workspaces" , "auto-apply" : true}}};
         console.log("request:" + JSON.stringify(request));
         const terraformWorkSpaceEndpoint = "https://"+terraformHost+"/api/v2/organizations/"+organizationName+"/workspaces";
        
@@ -239,11 +239,18 @@ async function sendFeedback(){
     var checkStatus = true;
 
   do{
-    await sleep(1000);
+    await sleep(10000);
     const status = await checkRunStatus(runId);
-    if("errored" == status || "policy_override" == status){
+
+   if("errored" == status){
+    console.log("Plan execution failed");
+   }
+   else if("discarded" == status) {
+    console.log("Plan execution discarded manually");
+   }
+   else if("policy_override" == status){
         checkStatus = false;
-        console.log("Plan execution failed or sentinel policy failed");
+        console.log("Sentinel policy failed");
     }
     else if("finished" == status) {
         checkStatus = false;
