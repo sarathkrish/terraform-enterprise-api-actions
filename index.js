@@ -254,7 +254,7 @@ async function sendFeedback(){
         checkStatus = false;
         console.log("Sentinel policy failed");
     }
-    else if("finished" == status) {
+    else if("finished" == status || "applied" == status) {
         checkStatus = false;
         console.log("Plan execution completed successfully");
 
