@@ -38,8 +38,8 @@ async function main() {
 
         terraformVariables = JSON.parse(terraformVariables);
         console.log("terraformEnvVariables:"+terraformEnvVariables);
-        terraformEnvVariables = JSON.parse(terraformEnvVariables);
-        console.log("terraformEnvVariables:"+terraformEnvVariables);
+        //terraformEnvVariables = JSON.parse(terraformEnvVariables);
+       // console.log("terraformEnvVariables:"+terraformEnvVariables);
       //  envVariables =  [{"key":"AWS_ACCESS_KEY_ID","value":Client_Id,"category":"env","hcl":false,"sensitive":true},
       //                  {"key":"AWS_SECRET_ACCESS_KEY","value":Secret_Id,"category":"env","hcl":false,"sensitive":true}
       //                ];
