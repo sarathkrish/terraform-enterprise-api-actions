@@ -149,15 +149,16 @@ async function createWorkSpace() {
 
 async function setVariables(terraformVariables, isConfigVarible) {
   try{
-    const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";
-    console.log("terraformVariableEndpoint:"+terraformVariableEndpoint);
-    console.log("terraformVariables:"+terraformVariables);  
-    if(isConfigVarible){
-        terraformVariables = processVariable(terraformVariables);
-    }
+    const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";  
     for(var i=0; i < terraformVariables.length; i++ ){
-        console.log("attribute:"+JSON.stringify(terraformVariables[i]));
-        var req = {data: {type: "vars", attributes: terraformVariables[i] }};
+        let var2Process = terraformVariables[i]; 
+        console.log("attribute:"+JSON.stringify(var2Process));
+
+        if(isConfigVarible){
+            var2Process = processVariable(var2Process);
+        }
+        console.log("attribute:"+JSON.stringify(var2Process));
+        var req = {data: {type: "vars", attributes: var2Process }};
         console.log("Request:"+ JSON.stringify(req));
         // Invoke 
         const response = await axios.post(terraformVariableEndpoint, req, options);
