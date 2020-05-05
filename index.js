@@ -91,34 +91,34 @@ async function main() {
 
         // Step 2 - Set Variables
 
-        //  await setVariables(terraformVariables);
+          await setVariables(terraformVariables);
 
         // Step 2.1 - Set Environment Variable
 
-       //  await setVariables(envVariables);
+         await setVariables(envVariables);
 
         // Step 2.2 - Set Config Variable
           await setVariables(pipelineConfigVariable, true);
 
         // Step 3 - Create Config Version
 
-        //configVersion = await createConfigVersion();
+         configVersion = await createConfigVersion();
   
         // Step 4 - Upload Config
 
-        //await uploadConfiguration();
+         await uploadConfiguration();
 
         // Step 5 - Attach Sentinel Policies
 
-       // await attachSentinelPolicySet();
+         await attachSentinelPolicySet();
 
         // Step 6 - Run
 
-        //runId = await run();
+         runId = await run();
 
         // Step 7 - Check status and Update ServiceNow
         
-       // await sendFeedback();
+         await sendFeedback();
         
         // Step 8 - Get Cost estimates
 
