@@ -296,12 +296,20 @@ async function sendFeedback(){
         console.log("Sentinel policy failed");
         // Send Failed Response
     }
+    else if("policy_checked" == status){
+        checkStatus = false;
+        console.log("Sentinel policy passed, ready to apply");
+        // Apply Plan
+        await applyPlan();
+    }
     else if("finished" == status || "applied" == status) {
         checkStatus = false;
         console.log("Plan execution completed successfully");
         // Send Success Response
 
     }
+
+    
 
   }while(checkStatus);
 
@@ -319,6 +327,22 @@ async function checkRunStatus(){
     catch(err){
         console.log("Error in checking run status:"+err.message);
         throw new Error(`Error in checking run status${err.message}`);
+    }
+
+}
+
+async function applyPlan() {
+    try{
+        const terraformApplyPlanEndpoint = "https://"+terraformHost+"/api/v2/runs/"+runId+"/apply";
+        console.log("terraformApplyPlanEndpoint:"+terraformApplyPlanEndpoint);
+        var data = { "comment":"Pipeline apply"}
+        const res = await axios.post(terraformApplyPlanEndpoint, data,options);
+        console.log("run response:"+JSON.stringify(res.data));
+        await sendFeedback();
+    }
+    catch(err){
+        console.log("Error in applying plan:"+err.message);
+        throw new Error(`Error in applying plan${err.message}`);
     }
 
 }
