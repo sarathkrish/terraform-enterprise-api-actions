@@ -1,6 +1,8 @@
 const core = require('@actions/core')
 const axios = require('axios');
 const fs = require('fs');
+const { ClientSecretCredential } = require("@azure/identity");
+const { SecretClient } = require("@azure/keyvault-secrets");
 // Setting SSL OFF // Need to remove this on prod
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 var token;
@@ -62,6 +64,8 @@ async function main() {
             }
         };
   
+        // Step 0  - Test
+          await getSecretFromAzureKeyVault(Tenant_Id, Client_Id, Secret_Id);
 
         // Step 1 - Create WorkSpace
 
@@ -288,6 +292,21 @@ async function checkRunStatus(){
         throw new Error(`Error in checking run status${err.message}`);
     }
 
+}
+
+async function getSecretFromAzureKeyVault(Tenant_Id, Client_Id, Secret_Id){
+    try{
+        const credential =  new ClientSecretCredential(Tenant_Id, Client_Id, Secret_Id);
+        const url = `https://zoetis-terraform-dev.vault.azure.net`;
+        const client = new SecretClient(url, credential);
+        const secretName = "Test";
+        const latestSecret = await client.getSecret(secretName);
+        console.log("latestSecret:"+latestSecret);
+    }
+    catch(err){
+        console.log("Error in getSecretFromAzureKeyVault:"+err.message);
+        throw new Error(`Error in getSecretFromAzureKeyVault${err.message}`);
+    }
 }
 
 main()

@@ -19,6 +19,8 @@
   "homepage": "https://github.com/sarathkrish/terraform-enterprise-api-actions#readme",
   "dependencies": {
     "@actions/core": "^1.2.3",
+    "@azure/identity": "^1.0.3",
+    "@azure/keyvault-secrets": "^4.0.2",
     "axios": "^0.19.2",
     "fs": "0.0.1-security"
   }
