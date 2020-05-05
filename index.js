@@ -155,7 +155,7 @@ async function setVariables(terraformVariables, isConfigVarible) {
         console.log("attribute:"+JSON.stringify(var2Process));
 
         if(isConfigVarible){
-            var2Process = processVariable(var2Process);
+            var2Process = await processVariable(var2Process);
         }
         console.log("attribute:"+JSON.stringify(var2Process));
         var req = {data: {type: "vars", attributes: var2Process }};
@@ -336,7 +336,7 @@ async function getSecretFromAzureKeyVault(url, secretName){
 async function processVariable(variable){
     try{
         if(variable.action && 'KeyVaultSecret' === variable.action){
-            let value = getSecretFromAzureKeyVault(variable.vaultUrl, variable.secretName);
+            let value = await getSecretFromAzureKeyVault(variable.vaultUrl, variable.secretName);
             let returnVariable = {
                 "key": variable.key,
                 "value" : value,
