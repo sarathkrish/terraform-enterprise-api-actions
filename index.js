@@ -26,6 +26,7 @@ var Subscription_Id ;
 var pipelineConfigData;
 var pipelineConfigFile;
 var environment;
+var pipelineConfigVariable;
 
 
 async function main() {
@@ -64,6 +65,7 @@ async function main() {
         pipelineConfigData = JSON.parse(pipelineConfigDataString);   
         console.log("pipelineConfigData:"+JSON.stringify(pipelineConfigData));
         console.log("Parameters:"+JSON.stringify(pipelineConfigData.parameterMappings[environment]));
+        pipelineConfigVariable=pipelineConfigData.parameterMappings[environment];
         
 
         // Azure Credentials as env params
@@ -82,21 +84,21 @@ async function main() {
             }
         };
   
-        // Step 0  - Test
-        //var test =   await getSecretFromAzureKeyVault(Tenant_Id, Client_Id, Secret_Id);
-       // console.log("test:"+test);
 
         // Step 1 - Create WorkSpace
 
-       // workSpaceId = await createWorkSpace();
+        workSpaceId = await createWorkSpace();
 
         // Step 2 - Set Variables
 
-       // await setVariables(terraformVariables);
+          await setVariables(terraformVariables);
 
         // Step 2.1 - Set Environment Variable
 
-       // await setVariables(envVariables);
+         await setVariables(envVariables);
+
+        // Step 2.2 - Set Config Variable
+          await setVariables(pipelineConfigVariable, true);
 
         // Step 3 - Create Config Version
 
@@ -145,11 +147,14 @@ async function createWorkSpace() {
     }
 }
 
-async function setVariables(terraformVariables) {
+async function setVariables(terraformVariables, processVariable) {
   try{
     const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";
     console.log("terraformVariableEndpoint:"+terraformVariableEndpoint);
     console.log("terraformVariables:"+terraformVariables);  
+    if(processVariable){
+        terraformVariables = processVariable(terraformVariables);
+    }
     for(var i=0; i < terraformVariables.length; i++ ){
         console.log("attribute:"+JSON.stringify(terraformVariables[i]));
         var req = {data: {type: "vars", attributes: terraformVariables[i] }};
