@@ -91,11 +91,11 @@ async function main() {
 
         // Step 2 - Set Variables
 
-          await setVariables(terraformVariables);
+        //  await setVariables(terraformVariables);
 
         // Step 2.1 - Set Environment Variable
 
-         await setVariables(envVariables);
+       //  await setVariables(envVariables);
 
         // Step 2.2 - Set Config Variable
           await setVariables(pipelineConfigVariable, true);
@@ -324,6 +324,7 @@ async function getSecretFromAzureKeyVault(url, secretName){
         const credential =  new ClientSecretCredential(Tenant_Id, Client_Id, Secret_Id);
         const client = new SecretClient(url, credential);
         const latestSecret = await client.getSecret(secretName);
+        console.log("latestSecret:"+latestSecret);
         return latestSecret.value;
     }
     catch(err){
@@ -343,7 +344,7 @@ async function processVariable(variable){
                 "hcl":false,
                 "sensitive":true
             };
-            console.log("returnVariable:"+JSON.stringify(returnVariable));
+            console.log("processVariable:"+JSON.stringify(returnVariable));
             return returnVariable;
         }
         else {
