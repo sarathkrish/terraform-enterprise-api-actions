@@ -65,7 +65,8 @@ async function main() {
         };
   
         // Step 0  - Test
-        //  await getSecretFromAzureKeyVault(Tenant_Id, Client_Id, Secret_Id);
+        //var test =   await getSecretFromAzureKeyVault(Tenant_Id, Client_Id, Secret_Id);
+       // console.log("test:"+test);
 
         // Step 1 - Create WorkSpace
 
