@@ -300,6 +300,7 @@ async function sendFeedback(){
         checkStatus = false;
         console.log("Sentinel policy passed, ready to apply");
         // Apply Plan
+        
         await applyPlan();
     }
     else if("finished" == status || "applied" == status) {
@@ -333,7 +334,7 @@ async function checkRunStatus(){
 
 async function applyPlan() {
     try{
-        const terraformApplyPlanEndpoint = "https://"+terraformHost+"/api/v2/runs/"+runId+"/apply";
+        const terraformApplyPlanEndpoint = "https://"+terraformHost+"/api/v2/runs/"+runId+"/actions/apply";
         console.log("terraformApplyPlanEndpoint:"+terraformApplyPlanEndpoint);
         var data = { "comment":"Pipeline apply"}
         const res = await axios.post(terraformApplyPlanEndpoint, data,options);
