@@ -335,14 +335,27 @@ async function getSecretFromAzureKeyVault(url, secretName){
 
 async function processVariable(variable){
     try{
+        let returnVariable ;
         if(variable.action && 'KeyVaultSecret' === variable.action){
             let value = await getSecretFromAzureKeyVault(variable.vaultUrl, variable.secretName);
-            let returnVariable = {
+              returnVariable = {
                 "key": variable.key,
                 "value" : value,
-                "category":"terraform",
-                "hcl":false,
+                "category":variable.category,
+                "hcl":variable.hcl,
                 "sensitive":true
+            };
+            console.log("processVariable:"+JSON.stringify(returnVariable));
+            return returnVariable;
+        }
+        else if(variable.action && 'None' === variable.action) {
+
+               returnVariable = {
+                "key": variable.key,
+                "value" : variable.value,
+                "category":variable.category,
+                "hcl": variable.hcl,
+                "sensitive":variable.sensitive
             };
             console.log("processVariable:"+JSON.stringify(returnVariable));
             return returnVariable;
