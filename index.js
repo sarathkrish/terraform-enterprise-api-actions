@@ -65,7 +65,7 @@ async function main() {
         };
   
         // Step 0  - Test
-          await getSecretFromAzureKeyVault(Tenant_Id, Client_Id, Secret_Id);
+        //  await getSecretFromAzureKeyVault(Tenant_Id, Client_Id, Secret_Id);
 
         // Step 1 - Create WorkSpace
 
@@ -301,7 +301,7 @@ async function getSecretFromAzureKeyVault(Tenant_Id, Client_Id, Secret_Id){
         const client = new SecretClient(url, credential);
         const secretName = "Test";
         const latestSecret = await client.getSecret(secretName);
-        console.log("latestSecret:"+latestSecret);
+        return latestSecret.value;
     }
     catch(err){
         console.log("Error in getSecretFromAzureKeyVault:"+err.message);
