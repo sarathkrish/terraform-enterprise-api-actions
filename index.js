@@ -147,12 +147,12 @@ async function createWorkSpace() {
     }
 }
 
-async function setVariables(terraformVariables, processVariable) {
+async function setVariables(terraformVariables, isConfigVarible) {
   try{
     const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";
     console.log("terraformVariableEndpoint:"+terraformVariableEndpoint);
     console.log("terraformVariables:"+terraformVariables);  
-    if(processVariable){
+    if(isConfigVarible){
         terraformVariables = processVariable(terraformVariables);
     }
     for(var i=0; i < terraformVariables.length; i++ ){
