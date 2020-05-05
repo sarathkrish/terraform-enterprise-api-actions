@@ -35,6 +35,12 @@ inputs:
   Subscription_Id:
      description: 'ARM_SUBSCRIPTION_ID'
      required: true
+  pipelineConfigFile:
+     description: 'pipelineConfigFile'
+     required: true
+  environment:
+     description: 'environment'
+     required: true
 runs:
   using: 'node12'
   main: 'index.js'

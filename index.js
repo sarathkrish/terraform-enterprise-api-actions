@@ -19,6 +19,13 @@ var terraformVariables;
 var sentinelPolicySetId;
 var runId;
 var terraformEnvVariables;
+var Client_Id ;
+var Secret_Id ;
+var Tenant_Id ;
+var Subscription_Id ;
+var pipelineConfigData;
+var pipelineConfigFile;
+var environment;
 
 
 async function main() {
@@ -30,10 +37,12 @@ async function main() {
         terraformHost = core.getInput('terraformHost');
         terraformVariables = core.getInput('terraformVariables');
         sentinelPolicySetId = core.getInput('sentinelPolicySetId');
-        const Client_Id = core.getInput('Client_Id');
-        const Secret_Id = core.getInput('Secret_Id');
-        const Tenant_Id = core.getInput('Tenant_Id');
-        const Subscription_Id = core.getInput('Subscription_Id');
+        Client_Id = core.getInput('Client_Id');
+        Secret_Id = core.getInput('Secret_Id');
+        Tenant_Id = core.getInput('Tenant_Id');
+        Subscription_Id = core.getInput('Subscription_Id');
+        pipelineConfigFile = core.getInput('pipelineConfigFile');
+        environment = core.getInput('environment');
 
         // Log Input Variables
         console.log("**************Input*********************");
@@ -44,9 +53,18 @@ async function main() {
         console.log("terraformVariables:"+terraformVariables);
         console.log("terraformEnvVariables:"+terraformEnvVariables);
         console.log("sentinelPolicySetId:"+sentinelPolicySetId);
+        console.log("pipelineConfigFile:"+pipelineConfigFile);
+        console.log("environment:"+environment);
+        
         console.log("**************Input*********************");
 
         terraformVariables = JSON.parse(terraformVariables);
+
+        let pipelineConfigDataString = fs.readFileSync(pipelineConfigFile);
+        pipelineConfigData = JSON.parse(pipelineConfigDataString);   
+        console.log("pipelineConfigData:"+JSON.stringify(pipelineConfigData));
+        console.log("Parameters:"+JSON.stringify(pipelineConfigData.parameterMappings[environment]));
+        
 
         // Azure Credentials as env params
 
@@ -70,35 +88,35 @@ async function main() {
 
         // Step 1 - Create WorkSpace
 
-        workSpaceId = await createWorkSpace();
+       // workSpaceId = await createWorkSpace();
 
         // Step 2 - Set Variables
 
-        await setVariables(terraformVariables);
+       // await setVariables(terraformVariables);
 
         // Step 2.1 - Set Environment Variable
 
-        await setVariables(envVariables);
+       // await setVariables(envVariables);
 
         // Step 3 - Create Config Version
 
-        configVersion = await createConfigVersion();
+        //configVersion = await createConfigVersion();
   
         // Step 4 - Upload Config
 
-        await uploadConfiguration();
+        //await uploadConfiguration();
 
         // Step 5 - Attach Sentinel Policies
 
-        await attachSentinelPolicySet();
+       // await attachSentinelPolicySet();
 
         // Step 6 - Run
 
-        runId = await run();
+        //runId = await run();
 
         // Step 7 - Check status and Update ServiceNow
         
-        await sendFeedback();
+       // await sendFeedback();
         
         // Step 8 - Get Cost estimates
 
@@ -295,18 +313,40 @@ async function checkRunStatus(){
 
 }
 
-async function getSecretFromAzureKeyVault(Tenant_Id, Client_Id, Secret_Id){
+async function getSecretFromAzureKeyVault(url, secretName){
     try{
         const credential =  new ClientSecretCredential(Tenant_Id, Client_Id, Secret_Id);
-        const url = `https://zoetis-terraform-dev.vault.azure.net`;
         const client = new SecretClient(url, credential);
-        const secretName = "Test";
         const latestSecret = await client.getSecret(secretName);
         return latestSecret.value;
     }
     catch(err){
         console.log("Error in getSecretFromAzureKeyVault:"+err.message);
         throw new Error(`Error in getSecretFromAzureKeyVault${err.message}`);
+    }
+}
+
+async function processVariable(variable){
+    try{
+        if(variable.action && 'KeyVaultSecret' === variable.action){
+            let value = getSecretFromAzureKeyVault(variable.vaultUrl, variable.secretName);
+            let returnVariable = {
+                "key": variable.key,
+                "value" : value,
+                "category":"terraform",
+                "hcl":false,
+                "sensitive":true
+            };
+            console.log("returnVariable:"+JSON.stringify(returnVariable));
+            return returnVariable;
+        }
+        else {
+            return variable;
+        }
+    }
+    catch(err){
+        console.log("Error in processVariable:"+err.message);
+        throw new Error(`Error in processVariable${err.message}`);
     }
 }
 
