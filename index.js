@@ -458,16 +458,20 @@ async function buildServiceNowFailureResponse(reason) {
         },
         Message: "Failed"
     };
+    let planStatus = await getPlanStatus();
+    if("errored" == planStatus) {
+        response.TFEResponse.Reason = "Terraform Plan Failed";
+        console.log("response:" + JSON.stringify(response));
+        return response;
+    }
+
     let sentinalResults = await fetchSentinelPolicyDetails();
     if (sentinalResults.status == false) {
         response.TFEResponse.Reason = "Sentinel Policy Failed";
         response.TFEResponse.Policies = sentinalResults.policies;
+        console.log("response:" + JSON.stringify(response));
+        return response;
     }
-    let planStatus = await getPlanStatus();
-    if("errored" == planStatus) {
-        response.TFEResponse.Reason = "Terraform Plan Failed";
-    }
-
     console.log("response:" + JSON.stringify(response));
     return response;
 }
