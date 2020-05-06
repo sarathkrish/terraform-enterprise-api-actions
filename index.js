@@ -123,8 +123,8 @@ async function main() {
 
     } catch (error) {
         // Log Incident 
-        let sericeNowMessage = buildServiceNowFailureResponse("GitHub Pipeline Execution Failed:"+error.message);
-        invokeServiceNowScriptedRestAPI(sericeNowMessage);
+        let sericeNowMessage = await buildServiceNowFailureResponse("GitHub Pipeline Execution Failed:"+error.message);
+        await invokeServiceNowScriptedRestAPI(sericeNowMessage);
         core.setFailed(error.message);
     }
 }
@@ -284,22 +284,22 @@ async function sendFeedback(){
         checkStatus = false;
         console.log("Plan execution failed");
         // Send Failed Response
-        let sericeNowMessage = buildServiceNowFailureResponse("Plan Execution Failed in TFE");
-        invokeServiceNowScriptedRestAPI(sericeNowMessage);
+        let sericeNowMessage = await buildServiceNowFailureResponse("Plan Execution Failed in TFE");
+        await invokeServiceNowScriptedRestAPI(sericeNowMessage);
    }
    else if("discarded" == status) {
         checkStatus = false;
         console.log("Plan execution discarded manually");
         // Send Failed Response
-        let sericeNowMessage = buildServiceNowFailureResponse("Plan Execution discarded in TFE");
-        invokeServiceNowScriptedRestAPI(sericeNowMessage);
+        let sericeNowMessage = await buildServiceNowFailureResponse("Plan Execution discarded in TFE");
+        await invokeServiceNowScriptedRestAPI(sericeNowMessage);
    }
    else if("policy_override" == status){
         checkStatus = false;
         console.log("Sentinel policy failed");
         // Send Failed Response
-        let sericeNowMessage = buildServiceNowFailureResponse("Sentinel Policy Failed");
-        invokeServiceNowScriptedRestAPI(sericeNowMessage);
+        let sericeNowMessage = await buildServiceNowFailureResponse("Sentinel Policy Failed");
+        await invokeServiceNowScriptedRestAPI(sericeNowMessage);
     }
     else if("policy_checked" == status){
         checkStatus = false;
@@ -311,11 +311,11 @@ async function sendFeedback(){
         checkStatus = false;
         console.log("Plan execution completed successfully");
         // Send Success Response
-        let outputs = getOutputs();
+        let outputs = await getOutputs();
         console.log("TFE outputs:"+outputs);
-        let sericeNowMessage = buildServiceNowSuccessResponse(outputs);
+        let sericeNowMessage =  await buildServiceNowSuccessResponse(outputs);
         console.log("sericeNowMessage:"+sericeNowMessage);
-        invokeServiceNowScriptedRestAPI(sericeNowMessage);
+        await invokeServiceNowScriptedRestAPI(sericeNowMessage);
 
     }
 
