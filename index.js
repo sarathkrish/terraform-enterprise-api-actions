@@ -288,6 +288,8 @@ async function sendFeedback() {
             // Send Failed Response
             let sericeNowMessage = await buildServiceNowFailureResponse("Execution Failed in TFE");
             await invokeServiceNowScriptedRestAPI(sericeNowMessage);
+            console.log("Setting pipeline Failed!");
+            core.setFailed("Execution Failed in TFE");
         }
         else if ("discarded" == status) {
             checkStatus = false;
@@ -295,6 +297,7 @@ async function sendFeedback() {
             // Send Failed Response
             let sericeNowMessage = await buildServiceNowFailureResponse("Plan Execution discarded in TFE");
             await invokeServiceNowScriptedRestAPI(sericeNowMessage);
+            core.setFailed("Plan Execution discarded in TFE");
         }
         /*else if("policy_override" == status){
              checkStatus = false;
@@ -457,12 +460,12 @@ async function buildServiceNowFailureResponse(reason) {
     };
     let sentinalResults = await fetchSentinelPolicyDetails();
     if (sentinalResults.status == false) {
-        response.TFEResponse.reason = "Sentinel Policy Failed";
-        response.TFEResponse.policies = sentinalResults.policies;
+        response.TFEResponse.Reason = "Sentinel Policy Failed";
+        response.TFEResponse.Policies = sentinalResults.policies;
     }
     let planStatus = await getPlanStatus();
     if("errored" == planStatus) {
-        response.TFEResponse.reason = "Terraform Plan Failed";
+        response.TFEResponse.Reason = "Terraform Plan Failed";
     }
 
     console.log("response:" + JSON.stringify(response));
