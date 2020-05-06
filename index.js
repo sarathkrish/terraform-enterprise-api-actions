@@ -282,9 +282,9 @@ async function sendFeedback(){
 
    if("errored" == status){
         checkStatus = false;
-        console.log("Plan execution failed");
+        console.log("Execution Failed in TFE");
         // Send Failed Response
-        let sericeNowMessage = await buildServiceNowFailureResponse("Plan Execution Failed in TFE");
+        let sericeNowMessage = await buildServiceNowFailureResponse("Execution Failed in TFE");
         await invokeServiceNowScriptedRestAPI(sericeNowMessage);
    }
    else if("discarded" == status) {
