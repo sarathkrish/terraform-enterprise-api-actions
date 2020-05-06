@@ -472,6 +472,13 @@ async function buildServiceNowFailureResponse(reason) {
         console.log("response:" + JSON.stringify(response));
         return response;
     }
+    let runStatus = await getRunStatus();
+    if (runStatus == 'errored') {
+        response.TFEResponse.Reason = "Terraform Apply Failed";
+        console.log("response:" + JSON.stringify(response));
+        return response;
+    }
+
     console.log("response:" + JSON.stringify(response));
     return response;
 }
@@ -521,14 +528,26 @@ async function fetchSentinelPolicyDetails() {
 async function getPlanStatus() {
 
     try {
-        let policyCheckUrl = "https://" + terraformHost + "/api/v2/runs/" + runId + "/plan";
-        let res = await axios.get(policyCheckUrl, options);
+        let planUrl = "https://" + terraformHost + "/api/v2/runs/" + runId + "/plan";
+        let res = await axios.get(planUrl, options);
         return res.data.data.attributes.status;
 
     } catch (err) {
         console.log("Error in getPlanStatus:" + err.message);
         throw new Error(`Error in getPlanStatus${err.message}`);
     }
+}
+
+async function getRunStatus(){
+    try{
+        let runUrl = "https://" + terraformHost + "/api/v2/runs/" + runId + "/run-events";
+        let res = await axios.get(runUrl,options);
+         return res.data.data[0].attributes.action;
+    }catch (err) {
+        console.log("Error in getRunStatus:" + err.message);
+        throw new Error(`Error in getRunStatus${err.message}`);
+    }
+
 }
 
 
