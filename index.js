@@ -294,13 +294,13 @@ async function sendFeedback(){
         let sericeNowMessage = await buildServiceNowFailureResponse("Plan Execution discarded in TFE");
         await invokeServiceNowScriptedRestAPI(sericeNowMessage);
    }
-   else if("policy_override" == status){
+   /*else if("policy_override" == status){
         checkStatus = false;
         console.log("Sentinel policy failed");
         // Send Failed Response
         let sericeNowMessage = await buildServiceNowFailureResponse("Sentinel Policy Failed");
         await invokeServiceNowScriptedRestAPI(sericeNowMessage);
-    }
+    }*/
     else if("policy_checked" == status){
         checkStatus = false;
         console.log("Sentinel policy passed, ready to apply");
@@ -362,7 +362,6 @@ async function getSecretFromAzureKeyVault(url, secretName){
         const credential =  new ClientSecretCredential(Tenant_Id, Client_Id, Secret_Id);
         const client = new SecretClient(url, credential);
         const latestSecret = await client.getSecret(secretName);
-        console.log("latestSecret:"+latestSecret);
         return latestSecret.value;
     }
     catch(err){
@@ -414,11 +413,11 @@ async function getOutputs() {
         console.log("stateVersionEndpoint:"+stateVersionEndpoint);
         let terraformOutPuts = [];
         const verResponse = await axios.get(stateVersionEndpoint,options);
-        for(  i = 0; i < verResponse.data.data.relationships.outputs.data.length; i++){
+        for( let i = 0; i < verResponse.data.data.relationships.outputs.data.length; i++){
             let stateId = verResponse.data.data.relationships.outputs.data[i].id;
             let outputsEndpoint = "https://"+terraformHost+"/api/v2/state-version-outputs/"+stateId;
             let res = await axios.get(outputsEndpoint,options);
-            var output = { "name": res.data.data.attributes.name, "value": res.data.data.attributes.value};
+            let output = { "name": res.data.data.attributes.name, "value": res.data.data.attributes.value};
             terraformOutPuts.push(output);
         }
         return terraformOutPuts;
@@ -445,7 +444,7 @@ async function buildServiceNowSuccessResponse(outputs){
 
 async function buildServiceNowFailureResponse(reason){
 
-    let response =  {
+   let response =  {
            "TaskId": workSpaceName,
            "TFEResponse":{
            "TFEWorkspaceId":workSpaceId,
@@ -454,6 +453,12 @@ async function buildServiceNowFailureResponse(reason){
           },
           "Message":"Failed"       
    }
+   let sentinalResults = await fetchSentinelPolicyDetails();
+   if(sentinalResults.status == false) {
+    response.reason = "Sentinel Policy Failed";
+    response.policies = sentinalResults.policies;
+   }
+   console.log("response:"+JSON.stringify(response));
    return response;
 }
 
@@ -466,6 +471,31 @@ async function invokeServiceNowScriptedRestAPI(data){
         throw new Error(`Error in invokeServiceNowScriptedRestAPI${err.message}`);
     }
 
+}
+
+async function fetchSentinelPolicyDetails(){
+    
+    try{
+    let policyCheckUrl = "https://"+terraformHost+"/api/v2/runs/"+runId+"/policy-checks";
+    let res = await axios.get(policyCheckUrl,options);
+    let policies = [];
+    for(let i=0; i < res.data.data[0].attributes.result.sentinel.policies.length; i++){
+        let policy = {
+         "name": res.data.data[0].attributes.result.sentinel.policies[i].policy,
+         "details": res.data.data[0].attributes.result.sentinel.policies[i].trace ? res.data.data[0].attributes.result.sentinel.policies[i].trace.print: ""
+        };
+        policies.push(policy);
+      }
+      let sentinalResults = {
+          "policies":policies,
+          "status": res.data.data[0].attributes.result.result
+      };
+      return sentinalResults;
+
+    }catch(err){
+        console.log("Error in fetchSentinelPolicyDetails:"+err.message);
+        throw new Error(`Error in fetchSentinelPolicyDetails${err.message}`);
+    }
 }
 
 
