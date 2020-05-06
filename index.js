@@ -19,10 +19,10 @@ var terraformVariables;
 var sentinelPolicySetId;
 var runId;
 var terraformEnvVariables;
-var Client_Id ;
-var Secret_Id ;
-var Tenant_Id ;
-var Subscription_Id ;
+var Client_Id;
+var Secret_Id;
+var Tenant_Id;
+var Subscription_Id;
 var pipelineConfigData;
 var pipelineConfigFile;
 var environment;
@@ -48,34 +48,34 @@ async function main() {
         environment = core.getInput('environment');
         terraformVariables = JSON.parse(core.getInput('terraformVariables'));
         //let pipelineConfigDataString = fs.readFileSync(pipelineConfigFile);
-        pipelineConfigData = JSON.parse(fs.readFileSync(pipelineConfigFile));   
-        pipelineConfigVariable=pipelineConfigData.parameterMappings[environment];
+        pipelineConfigData = JSON.parse(fs.readFileSync(pipelineConfigFile));
+        pipelineConfigVariable = pipelineConfigData.parameterMappings[environment];
         serviceNowEndPoint = core.getInput('serviceNowUrl');
-        
+
 
         // Log Input Variables
         console.log("**************Input*********************");
-        console.log("organizationName:"+organizationName);
-        console.log("workSpaceName:"+workSpaceName);
-        console.log("configFilePath:"+configFilePath);
-        console.log("terraformHost:"+terraformHost);
-        console.log("terraformVariables:"+terraformVariables);
-        console.log("terraformEnvVariables:"+terraformEnvVariables);
-        console.log("sentinelPolicySetId:"+sentinelPolicySetId);
-        console.log("pipelineConfigFile:"+pipelineConfigFile);
-        console.log("environment:"+environment);
-        console.log("pipelineConfigData:"+JSON.stringify(pipelineConfigData));
-        console.log("Parameters:"+JSON.stringify(pipelineConfigData.parameterMappings[environment]));
-        console.log("serviceNowEndPoint:"+serviceNowEndPoint);
+        console.log("organizationName:" + organizationName);
+        console.log("workSpaceName:" + workSpaceName);
+        console.log("configFilePath:" + configFilePath);
+        console.log("terraformHost:" + terraformHost);
+        console.log("terraformVariables:" + terraformVariables);
+        console.log("terraformEnvVariables:" + terraformEnvVariables);
+        console.log("sentinelPolicySetId:" + sentinelPolicySetId);
+        console.log("pipelineConfigFile:" + pipelineConfigFile);
+        console.log("environment:" + environment);
+        console.log("pipelineConfigData:" + JSON.stringify(pipelineConfigData));
+        console.log("Parameters:" + JSON.stringify(pipelineConfigData.parameterMappings[environment]));
+        console.log("serviceNowEndPoint:" + serviceNowEndPoint);
         console.log("**************Input*********************");
 
         // Azure Credentials as env params
 
-        envVariables =  [{"key":"ARM_CLIENT_ID","value":Client_Id,"category":"env","hcl":false,"sensitive":true},
-                        {"key":"ARM_CLIENT_SECRET","value":Secret_Id,"category":"env","hcl":false,"sensitive":true},
-                        {"key":"ARM_TENANT_ID","value":Tenant_Id,"category":"env","hcl":false,"sensitive":true},
-                        {"key":"ARM_SUBSCRIPTION_ID","value":Subscription_Id,"category":"env","hcl":false,"sensitive":true}
-                     ];
+        envVariables = [{ "key": "ARM_CLIENT_ID", "value": Client_Id, "category": "env", "hcl": false, "sensitive": true },
+        { "key": "ARM_CLIENT_SECRET", "value": Secret_Id, "category": "env", "hcl": false, "sensitive": true },
+        { "key": "ARM_TENANT_ID", "value": Tenant_Id, "category": "env", "hcl": false, "sensitive": true },
+        { "key": "ARM_SUBSCRIPTION_ID", "value": Subscription_Id, "category": "env", "hcl": false, "sensitive": true }
+        ];
 
         // Terraform Request Header 
         options = {
@@ -84,7 +84,7 @@ async function main() {
                 'Authorization': 'Bearer ' + token
             }
         };
-  
+
 
         // Step 1 - Create WorkSpace
 
@@ -92,38 +92,38 @@ async function main() {
 
         // Step 2 - Set Variables
 
-          await setVariables(terraformVariables);
+        await setVariables(terraformVariables);
 
         // Step 2.1 - Set Environment Variable
 
-         await setVariables(envVariables);
+        await setVariables(envVariables);
 
         // Step 2.2 - Set Config Variable
-          await setVariables(pipelineConfigVariable, true);
+        await setVariables(pipelineConfigVariable, true);
 
         // Step 3 - Create Config Version
 
-         configVersion = await createConfigVersion();
-  
+        configVersion = await createConfigVersion();
+
         // Step 4 - Upload Config
 
-         await uploadConfiguration();
+        await uploadConfiguration();
 
         // Step 5 - Attach Sentinel Policies
 
-         await attachSentinelPolicySet();
+        await attachSentinelPolicySet();
 
         // Step 6 - Run
 
-         runId = await run();
+        runId = await run();
 
         // Step 7 - Check status and Update ServiceNow
-        
-         await sendFeedback();
+
+        await sendFeedback();
 
     } catch (error) {
         // Log Incident 
-        let sericeNowMessage = await buildServiceNowFailureResponse("GitHub Pipeline Execution Failed:"+error.message);
+        let sericeNowMessage = await buildServiceNowFailureResponse("GitHub Pipeline Execution Failed:" + error.message);
         await invokeServiceNowScriptedRestAPI(sericeNowMessage);
         core.setFailed(error.message);
     }
@@ -131,11 +131,11 @@ async function main() {
 
 async function createWorkSpace() {
     try {
-        let request = { data : { attributes: { name : workSpaceName, type: "workspaces" , "auto-apply" : false}}};
+        let request = { data: { attributes: { name: workSpaceName, type: "workspaces", "auto-apply": false } } };
         console.log("request:" + JSON.stringify(request));
-        const terraformWorkSpaceEndpoint = "https://"+terraformHost+"/api/v2/organizations/"+organizationName+"/workspaces";
-       
-        console.log("terraformWorkSpaceEndpoint:"+terraformWorkSpaceEndpoint); 
+        const terraformWorkSpaceEndpoint = "https://" + terraformHost + "/api/v2/organizations/" + organizationName + "/workspaces";
+
+        console.log("terraformWorkSpaceEndpoint:" + terraformWorkSpaceEndpoint);
         const response = await axios.post(terraformWorkSpaceEndpoint, request, options);
         const workSpaceId = response.data.data.id;
         console.log("workSpaceId:" + workSpaceId);
@@ -147,28 +147,28 @@ async function createWorkSpace() {
 }
 
 async function setVariables(terraformVariables, isConfigVarible) {
-  try{
-    const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";  
-    for(var i=0; i < terraformVariables.length; i++ ){
-        let var2Process = terraformVariables[i]; 
-        console.log("attribute:"+JSON.stringify(var2Process));
+    try {
+        const terraformVariableEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/vars";
+        for (var i = 0; i < terraformVariables.length; i++) {
+            let var2Process = terraformVariables[i];
+            console.log("attribute:" + JSON.stringify(var2Process));
 
-        if(isConfigVarible){
-            var2Process = await processVariable(var2Process);
+            if (isConfigVarible) {
+                var2Process = await processVariable(var2Process);
+            }
+            console.log("attribute:" + JSON.stringify(var2Process));
+            var req = { data: { type: "vars", attributes: var2Process } };
+            console.log("Request:" + JSON.stringify(req));
+            // Invoke 
+            const response = await axios.post(terraformVariableEndpoint, req, options);
+            console.log("Set Variable Response:" + JSON.stringify(response.data));
         }
-        console.log("attribute:"+JSON.stringify(var2Process));
-        var req = {data: {type: "vars", attributes: var2Process }};
-        console.log("Request:"+ JSON.stringify(req));
-        // Invoke 
-        const response = await axios.post(terraformVariableEndpoint, req, options);
-        console.log("Set Variable Response:"+ JSON.stringify(response.data));
-      }
 
 
-  }catch(err){
-    console.log(`Error setting variables${err}`)
-    throw new Error(`Error setting variables ${err.message}`)
-  }
+    } catch (err) {
+        console.log(`Error setting variables${err}`)
+        throw new Error(`Error setting variables ${err.message}`)
+    }
 }
 
 async function createConfigVersion() {
@@ -176,11 +176,11 @@ async function createConfigVersion() {
 
         const body = { data: { type: "configuration-versions", attributes: { "auto-queue-runs": false } } };
         const terraformConfigVersionsEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/configuration-versions";
-        console.log("terraformConfigVersionsEndpoint:"+terraformConfigVersionsEndpoint);
-        console.log("terraformConfigVersions request:"+JSON.stringify(body));
+        console.log("terraformConfigVersionsEndpoint:" + terraformConfigVersionsEndpoint);
+        console.log("terraformConfigVersions request:" + JSON.stringify(body));
         res = await axios.post(terraformConfigVersionsEndpoint, JSON.stringify(body), options);
         const configVersion = res.data.data;
-        console.log("create config version response:"+ JSON.stringify(res.data.data));
+        console.log("create config version response:" + JSON.stringify(res.data.data));
         return { id: configVersion.id, uploadUrl: configVersion.attributes['upload-url'] };
 
     } catch (err) {
@@ -193,7 +193,7 @@ async function createConfigVersion() {
 
 async function uploadConfiguration() {
     try {
-        console.log("configVersion:"+configVersion);
+        console.log("configVersion:" + configVersion);
         await axios.put(configVersion.uploadUrl, fs.createReadStream(configFilePath), { headers: { 'Content-Type': `application/octet-stream` } });
         var status = await getConfigVersionStatus(configVersion.id);
         var counter = 0;
@@ -219,13 +219,13 @@ async function uploadConfiguration() {
 
 async function getConfigVersionStatus(configVersionId) {
     try {
-        const configVersionStatusUrl = "https://" + terraformHost + "/api/v2/configuration-versions/"+configVersionId;
-        console.log("configVersionStatusUrl:"+configVersionStatusUrl);
+        const configVersionStatusUrl = "https://" + terraformHost + "/api/v2/configuration-versions/" + configVersionId;
+        console.log("configVersionStatusUrl:" + configVersionStatusUrl);
         const res = await axios.get(configVersionStatusUrl, options);
-        console.log("configVersionStatus Response:"+res.data.data);
+        console.log("configVersionStatus Response:" + res.data.data);
         return res.data.data.attributes.status;
     } catch (err) {
-        console.log("Error in getConfigVersionStatus:"+err.message);
+        console.log("Error in getConfigVersionStatus:" + err.message);
         throw new Error(`Error getting configuration version: ${err.message}`);
     }
 }
@@ -234,267 +234,293 @@ async function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-async function attachSentinelPolicySet(){
-    try{
-        const attachPolicyUrl = "https://" + terraformHost + "/api/v2/policy-sets/"+sentinelPolicySetId+"/relationships/workspaces";
-        let req = { data : [ {id: workSpaceId, type: "workspaces" }]};
-        console.log("attachSentinelPolicySet req:"+JSON.stringify(req));
-        const res = await axios.post(attachPolicyUrl, req,  options);
-        console.log("attachSentinelPolicySet:"+res.data.data);
-    }catch(err){
-        console.log("Error in attachPolicySet:"+err.message);
+async function attachSentinelPolicySet() {
+    try {
+        const attachPolicyUrl = "https://" + terraformHost + "/api/v2/policy-sets/" + sentinelPolicySetId + "/relationships/workspaces";
+        let req = { data: [{ id: workSpaceId, type: "workspaces" }] };
+        console.log("attachSentinelPolicySet req:" + JSON.stringify(req));
+        const res = await axios.post(attachPolicyUrl, req, options);
+        console.log("attachSentinelPolicySet:" + res.data.data);
+    } catch (err) {
+        console.log("Error in attachPolicySet:" + err.message);
         throw new Error(`Error Attaching Policy Set ${err.message}`);
     }
 }
 
-async function run(){
- try{
-    const terraformRunEndpoint = "https://"+terraformHost+"/api/v2/runs";
-    let request = { data : { 
-                    attributes: { "is-destroy" : false, "message" : "Pipeline invocation" },
-                    type: "runs",
-                    relationships: {
-                      workspace: {
+async function run() {
+    try {
+        const terraformRunEndpoint = "https://" + terraformHost + "/api/v2/runs";
+        let request = {
+            data: {
+                attributes: { "is-destroy": false, "message": "Pipeline invocation" },
+                type: "runs",
+                relationships: {
+                    workspace: {
                         data: {
-                          type: "workspaces",
-                          id: workSpaceId
+                            type: "workspaces",
+                            id: workSpaceId
                         }
-                      }
                     }
-                   }};
-    console.log("run request:" + JSON.stringify(request));
-    const res = await axios.post(terraformRunEndpoint, request,  options);
-    console.log("run response:"+res.data.data);
-    const runId = res.data.data.id;
-     return runId;
-    }catch(err){
-        console.log("Error in run:"+err.message);
+                }
+            }
+        };
+        console.log("run request:" + JSON.stringify(request));
+        const res = await axios.post(terraformRunEndpoint, request, options);
+        console.log("run response:" + res.data.data);
+        const runId = res.data.data.id;
+        return runId;
+    } catch (err) {
+        console.log("Error in run:" + err.message);
         throw new Error(`Error in run ${err.message}`);
     }
 }
 
-async function sendFeedback(){
+async function sendFeedback() {
     var checkStatus = true;
 
-  do{
-    await sleep(60000);
-    const status = await checkRunStatus(runId);
+    do {
+        await sleep(60000);
+        const status = await checkRunStatus(runId);
 
-   if("errored" == status){
-        checkStatus = false;
-        console.log("Execution Failed in TFE");
-        // Send Failed Response
-        let sericeNowMessage = await buildServiceNowFailureResponse("Execution Failed in TFE");
-        await invokeServiceNowScriptedRestAPI(sericeNowMessage);
-   }
-   else if("discarded" == status) {
-        checkStatus = false;
-        console.log("Plan execution discarded manually");
-        // Send Failed Response
-        let sericeNowMessage = await buildServiceNowFailureResponse("Plan Execution discarded in TFE");
-        await invokeServiceNowScriptedRestAPI(sericeNowMessage);
-   }
-   /*else if("policy_override" == status){
-        checkStatus = false;
-        console.log("Sentinel policy failed");
-        // Send Failed Response
-        let sericeNowMessage = await buildServiceNowFailureResponse("Sentinel Policy Failed");
-        await invokeServiceNowScriptedRestAPI(sericeNowMessage);
-    }*/
-    else if("policy_checked" == status){
-        checkStatus = false;
-        console.log("Sentinel policy passed, ready to apply");
-        // Apply Plan  
-        await applyPlan();
-    }
-    else if("finished" == status || "applied" == status) {
-        checkStatus = false;
-        console.log("Plan execution completed successfully");
-        // Send Success Response
-        let outputs = await getOutputs();
-        console.log("TFE outputs:"+outputs);
-        let sericeNowMessage =  await buildServiceNowSuccessResponse(outputs);
-        console.log("sericeNowMessage:"+sericeNowMessage);
-        await invokeServiceNowScriptedRestAPI(sericeNowMessage);
+        if ("errored" == status) {
+            checkStatus = false;
+            console.log("Execution Failed in TFE");
+            // Send Failed Response
+            let sericeNowMessage = await buildServiceNowFailureResponse("Execution Failed in TFE");
+            await invokeServiceNowScriptedRestAPI(sericeNowMessage);
+        }
+        else if ("discarded" == status) {
+            checkStatus = false;
+            console.log("Plan execution discarded manually");
+            // Send Failed Response
+            let sericeNowMessage = await buildServiceNowFailureResponse("Plan Execution discarded in TFE");
+            await invokeServiceNowScriptedRestAPI(sericeNowMessage);
+        }
+        /*else if("policy_override" == status){
+             checkStatus = false;
+             console.log("Sentinel policy failed");
+             // Send Failed Response
+             let sericeNowMessage = await buildServiceNowFailureResponse("Sentinel Policy Failed");
+             await invokeServiceNowScriptedRestAPI(sericeNowMessage);
+         }*/
+        else if ("policy_checked" == status) {
+            checkStatus = false;
+            console.log("Sentinel policy passed, ready to apply");
+            // Apply Plan  
+            await applyPlan();
+        }
+        else if ("finished" == status || "applied" == status) {
+            checkStatus = false;
+            console.log("Plan execution completed successfully");
+            // Send Success Response
+            let outputs = await getOutputs();
+            console.log("TFE outputs:" + outputs);
+            let sericeNowMessage = await buildServiceNowSuccessResponse(outputs);
+            console.log("sericeNowMessage:" + sericeNowMessage);
+            await invokeServiceNowScriptedRestAPI(sericeNowMessage);
 
-    }
+        }
 
-    
 
-  }while(checkStatus);
+
+    } while (checkStatus);
 
 }
 
-async function checkRunStatus(){
+async function checkRunStatus() {
 
-    try{
-        const terraformRunStatusEndpoint = "https://"+terraformHost+"/api/v2/runs/"+runId;
-        console.log("terraformRunStatusEndpoint:"+terraformRunStatusEndpoint);
+    try {
+        const terraformRunStatusEndpoint = "https://" + terraformHost + "/api/v2/runs/" + runId;
+        console.log("terraformRunStatusEndpoint:" + terraformRunStatusEndpoint);
         const res = await axios.get(terraformRunStatusEndpoint, options);
-        console.log("run response:"+JSON.stringify(res.data.data));
+        console.log("run response:" + JSON.stringify(res.data.data));
         return res.data.data.attributes.status;
     }
-    catch(err){
-        console.log("Error in checking run status:"+err.message);
+    catch (err) {
+        console.log("Error in checking run status:" + err.message);
         throw new Error(`Error in checking run status${err.message}`);
     }
 
 }
 
 async function applyPlan() {
-    try{
-        const terraformApplyPlanEndpoint = "https://"+terraformHost+"/api/v2/runs/"+runId+"/actions/apply";
-        console.log("terraformApplyPlanEndpoint:"+terraformApplyPlanEndpoint);
-        var data = { "comment":"Pipeline apply"}
-        const res = await axios.post(terraformApplyPlanEndpoint, data,options);
-        console.log("run response:"+JSON.stringify(res.data));
+    try {
+        const terraformApplyPlanEndpoint = "https://" + terraformHost + "/api/v2/runs/" + runId + "/actions/apply";
+        console.log("terraformApplyPlanEndpoint:" + terraformApplyPlanEndpoint);
+        var data = { "comment": "Pipeline apply" }
+        const res = await axios.post(terraformApplyPlanEndpoint, data, options);
+        console.log("run response:" + JSON.stringify(res.data));
         await sendFeedback();
     }
-    catch(err){
-        console.log("Error in applying plan:"+err.message);
+    catch (err) {
+        console.log("Error in applying plan:" + err.message);
         throw new Error(`Error in applying plan${err.message}`);
     }
 
 }
 
-async function getSecretFromAzureKeyVault(url, secretName){
-    try{
-        const credential =  new ClientSecretCredential(Tenant_Id, Client_Id, Secret_Id);
+async function getSecretFromAzureKeyVault(url, secretName) {
+    try {
+        const credential = new ClientSecretCredential(Tenant_Id, Client_Id, Secret_Id);
         const client = new SecretClient(url, credential);
         const latestSecret = await client.getSecret(secretName);
         return latestSecret.value;
     }
-    catch(err){
-        console.log("Error in getSecretFromAzureKeyVault:"+err.message);
+    catch (err) {
+        console.log("Error in getSecretFromAzureKeyVault:" + err.message);
         throw new Error(`Error in getSecretFromAzureKeyVault${err.message}`);
     }
 }
 
-async function processVariable(variable){
-    try{
-        let returnVariable ;
-        if(variable.action && 'KeyVaultSecret' === variable.action){
+async function processVariable(variable) {
+    try {
+        let returnVariable;
+        if (variable.action && 'KeyVaultSecret' === variable.action) {
             let value = await getSecretFromAzureKeyVault(variable.vaultUrl, variable.secretName);
-              returnVariable = {
+            returnVariable = {
                 "key": variable.key,
-                "value" : value,
-                "category":variable.category,
-                "hcl":variable.hcl,
-                "sensitive":true
+                "value": value,
+                "category": variable.category,
+                "hcl": variable.hcl,
+                "sensitive": true
             };
-            console.log("processVariable:"+JSON.stringify(returnVariable));
+            console.log("processVariable:" + JSON.stringify(returnVariable));
             return returnVariable;
         }
-        else if(variable.action && 'None' === variable.action) {
+        else if (variable.action && 'None' === variable.action) {
 
-               returnVariable = {
+            returnVariable = {
                 "key": variable.key,
-                "value" : variable.value,
-                "category":variable.category,
+                "value": variable.value,
+                "category": variable.category,
                 "hcl": variable.hcl,
-                "sensitive":variable.sensitive
+                "sensitive": variable.sensitive
             };
-            console.log("processVariable:"+JSON.stringify(returnVariable));
+            console.log("processVariable:" + JSON.stringify(returnVariable));
             return returnVariable;
         }
         else {
             return variable;
         }
     }
-    catch(err){
-        console.log("Error in processVariable:"+err.message);
+    catch (err) {
+        console.log("Error in processVariable:" + err.message);
         throw new Error(`Error in processVariable${err.message}`);
     }
 }
 
 async function getOutputs() {
     try {
-        const stateVersionEndpoint = "https://"+terraformHost+"/api/v2/workspaces/"+workSpaceId+"/current-state-version";
-        console.log("stateVersionEndpoint:"+stateVersionEndpoint);
+        const stateVersionEndpoint = "https://" + terraformHost + "/api/v2/workspaces/" + workSpaceId + "/current-state-version";
+        console.log("stateVersionEndpoint:" + stateVersionEndpoint);
         let terraformOutPuts = [];
-        const verResponse = await axios.get(stateVersionEndpoint,options);
-        for( let i = 0; i < verResponse.data.data.relationships.outputs.data.length; i++){
+        const verResponse = await axios.get(stateVersionEndpoint, options);
+        for (let i = 0; i < verResponse.data.data.relationships.outputs.data.length; i++) {
             let stateId = verResponse.data.data.relationships.outputs.data[i].id;
-            let outputsEndpoint = "https://"+terraformHost+"/api/v2/state-version-outputs/"+stateId;
-            let res = await axios.get(outputsEndpoint,options);
-            let output = { "name": res.data.data.attributes.name, "value": res.data.data.attributes.value};
+            let outputsEndpoint = "https://" + terraformHost + "/api/v2/state-version-outputs/" + stateId;
+            let res = await axios.get(outputsEndpoint, options);
+            let output = { "name": res.data.data.attributes.name, "value": res.data.data.attributes.value };
             terraformOutPuts.push(output);
         }
         return terraformOutPuts;
-    }catch(err){
-        console.log("Error in getOutputs:"+err.message);
+    } catch (err) {
+        console.log("Error in getOutputs:" + err.message);
         throw new Error(`Error in getOutputs${err.message}`);
     }
 }
 
 
-async function buildServiceNowSuccessResponse(outputs){
+async function buildServiceNowSuccessResponse(outputs) {
 
-    let response =  {
-           "TaskId": workSpaceName,
-           "TFEResponse":{
-           "TFEWorkspaceId":workSpaceId,
-           "TFEWorkspaceName":workSpaceName,
-           "TFEOutputs": outputs  
-          },
-          "Message":"Success"       
-   }
-   return response;
+    let response = {
+        "TaskId": workSpaceName,
+        "TFEResponse": {
+            "TFEWorkspaceId": workSpaceId,
+            "TFEWorkspaceName": workSpaceName,
+            "TFEOutputs": outputs
+        },
+        "Message": "Success"
+    }
+    return response;
 }
 
-async function buildServiceNowFailureResponse(reason){
+async function buildServiceNowFailureResponse(reason) {
 
-   let response =  {
-           "TaskId": workSpaceName,
-           "TFEResponse":{
-           "TFEWorkspaceId":workSpaceId,
-           "TFEWorkspaceName":workSpaceName,
-           "Reason": reason
-          },
-          "Message":"Failed"       
-   }
-   let sentinalResults = await fetchSentinelPolicyDetails();
-   if(sentinalResults.status == false) {
-    response.reason = "Sentinel Policy Failed";
-    response.policies = sentinalResults.policies;
-   }
-   console.log("response:"+JSON.stringify(response));
-   return response;
+    let response = {
+        "TaskId": workSpaceName,
+        "TFEResponse": {
+            "TFEWorkspaceId": workSpaceId,
+            "TFEWorkspaceName": workSpaceName,
+            "Reason": reason
+        },
+        "Message": "Failed"
+    }
+    let sentinalResults = await fetchSentinelPolicyDetails();
+    if (sentinalResults.status == false) {
+        response.reason = "Sentinel Policy Failed";
+        response.policies = sentinalResults.policies;
+    }
+    let planStatus = await getPlanStatus();
+    if("errored" == planStatus) {
+        response.reason = "Terraform Plan Failed";
+    }
+
+    console.log("response:" + JSON.stringify(response));
+    return response;
 }
 
-async function invokeServiceNowScriptedRestAPI(data){
-    try{
-    let res = await axios.post(serviceNowEndPoint,data);
-    console.log("service Now response:"+JSON.stringify(res.data));
-    }catch(err){
-        console.log("Error in invokeServiceNowScriptedRestAPI:"+err.message);
+async function invokeServiceNowScriptedRestAPI(data) {
+    try {
+        let res = await axios.post(serviceNowEndPoint, data);
+        console.log("service Now response:" + JSON.stringify(res.data));
+    } catch (err) {
+        console.log("Error in invokeServiceNowScriptedRestAPI:" + err.message);
         throw new Error(`Error in invokeServiceNowScriptedRestAPI${err.message}`);
     }
 
 }
 
-async function fetchSentinelPolicyDetails(){
-    
-    try{
-    let policyCheckUrl = "https://"+terraformHost+"/api/v2/runs/"+runId+"/policy-checks";
-    let res = await axios.get(policyCheckUrl,options);
-    let policies = [];
-    for(let i=0; i < res.data.data[0].attributes.result.sentinel.policies.length; i++){
-        let policy = {
-         "name": res.data.data[0].attributes.result.sentinel.policies[i].policy,
-         "details": res.data.data[0].attributes.result.sentinel.policies[i].trace ? res.data.data[0].attributes.result.sentinel.policies[i].trace.print: ""
-        };
-        policies.push(policy);
-      }
-      let sentinalResults = {
-          "policies":policies,
-          "status": res.data.data[0].attributes.result.result
-      };
-      return sentinalResults;
+async function fetchSentinelPolicyDetails() {
 
-    }catch(err){
-        console.log("Error in fetchSentinelPolicyDetails:"+err.message);
+    try {
+        let policyCheckUrl = "https://" + terraformHost + "/api/v2/runs/" + runId + "/policy-checks";
+        let res = await axios.get(policyCheckUrl, options);
+        let policies = [];
+        let sentinalResults = {
+            "policies": policies,
+            "status": true
+        };
+        if (res.data.data[0].attributes.result) {
+            for (let i = 0; i < res.data.data[0].attributes.result.sentinel.policies.length; i++) {
+                let policy = {
+                    "name": res.data.data[0].attributes.result.sentinel.policies[i].policy,
+                    "details": res.data.data[0].attributes.result.sentinel.policies[i].trace ? res.data.data[0].attributes.result.sentinel.policies[i].trace.print : ""
+                };
+                policies.push(policy);
+            }
+            sentinalResults = {
+                "policies": policies,
+                "status": res.data.data[0].attributes.result.result
+            };
+        }
+        return sentinalResults;
+
+    } catch (err) {
+        console.log("Error in fetchSentinelPolicyDetails:" + err.message);
         throw new Error(`Error in fetchSentinelPolicyDetails${err.message}`);
+    }
+}
+
+async function getPlanStatus() {
+
+    try {
+        let policyCheckUrl = "https://" + terraformHost + "/api/v2/runs/" + runId + "/plan";
+        let res = await axios.get(policyCheckUrl, options);
+        return res.data.data.attributes.status;
+
+    } catch (err) {
+        console.log("Error in getPlanStatus:" + err.message);
+        throw new Error(`Error in getPlanStatus${err.message}`);
     }
 }
 
