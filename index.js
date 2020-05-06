@@ -447,22 +447,22 @@ async function buildServiceNowSuccessResponse(outputs) {
 async function buildServiceNowFailureResponse(reason) {
 
     let response = {
-        "TaskId": workSpaceName,
-        "TFEResponse": {
-            "TFEWorkspaceId": workSpaceId,
-            "TFEWorkspaceName": workSpaceName,
-            "Reason": reason
+        TaskId: workSpaceName,
+        TFEResponse: {
+            TFEWorkspaceId: workSpaceId,
+            TFEWorkspaceName: workSpaceName,
+            Reason: reason
         },
-        "Message": "Failed"
-    }
+        Message: "Failed"
+    };
     let sentinalResults = await fetchSentinelPolicyDetails();
     if (sentinalResults.status == false) {
-        response.reason = "Sentinel Policy Failed";
-        response.policies = sentinalResults.policies;
+        response.TFEResponse.reason = "Sentinel Policy Failed";
+        response.TFEResponse.policies = sentinalResults.policies;
     }
     let planStatus = await getPlanStatus();
     if("errored" == planStatus) {
-        response.reason = "Terraform Plan Failed";
+        response.TFEResponse.reason = "Terraform Plan Failed";
     }
 
     console.log("response:" + JSON.stringify(response));
