@@ -41,6 +41,9 @@ inputs:
   environment:
      description: 'environment'
      required: true
+  serviceNowUrl:
+     description: 'serviceNowUrl'
+     required: true
 runs:
   using: 'node12'
   main: 'index.js'

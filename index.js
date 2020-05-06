@@ -27,7 +27,8 @@ var pipelineConfigData;
 var pipelineConfigFile;
 var environment;
 var pipelineConfigVariable;
-const serviceNowEndPoint = "https://dev63722.service-now.com/api/482432/tfe_notification_listener";
+var serviceNowEndPoint;
+//var serviceNowEndPoint = "https://dev63722.service-now.com/api/482432/tfe_notification_listener";
 
 
 async function main() {
@@ -49,6 +50,8 @@ async function main() {
         //let pipelineConfigDataString = fs.readFileSync(pipelineConfigFile);
         pipelineConfigData = JSON.parse(fs.readFileSync(pipelineConfigFile));   
         pipelineConfigVariable=pipelineConfigData.parameterMappings[environment];
+        serviceNowEndPoint = core.getInput('serviceNowUrl');
+        
 
         // Log Input Variables
         console.log("**************Input*********************");
@@ -63,6 +66,7 @@ async function main() {
         console.log("environment:"+environment);
         console.log("pipelineConfigData:"+JSON.stringify(pipelineConfigData));
         console.log("Parameters:"+JSON.stringify(pipelineConfigData.parameterMappings[environment]));
+        console.log("serviceNowEndPoint:"+serviceNowEndPoint);
         console.log("**************Input*********************");
 
         // Azure Credentials as env params
@@ -308,7 +312,9 @@ async function sendFeedback(){
         console.log("Plan execution completed successfully");
         // Send Success Response
         let outputs = getOutputs();
+        console.log("TFE outputs:"+outputs);
         let sericeNowMessage = buildServiceNowSuccessResponse(outputs);
+        console.log("sericeNowMessage:"+sericeNowMessage);
         invokeServiceNowScriptedRestAPI(sericeNowMessage);
 
     }
