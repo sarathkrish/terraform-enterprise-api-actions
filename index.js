@@ -27,16 +27,17 @@ var pipelineConfigData;
 var pipelineConfigFile;
 var environment;
 var pipelineConfigVariable;
+const serviceNowEndPoint = "https://dev63722.service-now.com/api/482432/tfe_notification_listener";
 
 
 async function main() {
     try {
+        // Global variables
         token = core.getInput('terraformToken');
         organizationName = core.getInput('terraformOrg');
         workSpaceName = core.getInput('terraformWorkspace');
         configFilePath = core.getInput('configFilePath');
         terraformHost = core.getInput('terraformHost');
-        terraformVariables = core.getInput('terraformVariables');
         sentinelPolicySetId = core.getInput('sentinelPolicySetId');
         Client_Id = core.getInput('Client_Id');
         Secret_Id = core.getInput('Secret_Id');
@@ -44,6 +45,10 @@ async function main() {
         Subscription_Id = core.getInput('Subscription_Id');
         pipelineConfigFile = core.getInput('pipelineConfigFile');
         environment = core.getInput('environment');
+        terraformVariables = JSON.parse(core.getInput('terraformVariables'));
+        //let pipelineConfigDataString = fs.readFileSync(pipelineConfigFile);
+        pipelineConfigData = JSON.parse(fs.readFileSync(pipelineConfigFile));   
+        pipelineConfigVariable=pipelineConfigData.parameterMappings[environment];
 
         // Log Input Variables
         console.log("**************Input*********************");
@@ -56,17 +61,9 @@ async function main() {
         console.log("sentinelPolicySetId:"+sentinelPolicySetId);
         console.log("pipelineConfigFile:"+pipelineConfigFile);
         console.log("environment:"+environment);
-        
-        console.log("**************Input*********************");
-
-        terraformVariables = JSON.parse(terraformVariables);
-
-        let pipelineConfigDataString = fs.readFileSync(pipelineConfigFile);
-        pipelineConfigData = JSON.parse(pipelineConfigDataString);   
         console.log("pipelineConfigData:"+JSON.stringify(pipelineConfigData));
         console.log("Parameters:"+JSON.stringify(pipelineConfigData.parameterMappings[environment]));
-        pipelineConfigVariable=pipelineConfigData.parameterMappings[environment];
-        
+        console.log("**************Input*********************");
 
         // Azure Credentials as env params
 
@@ -76,7 +73,7 @@ async function main() {
                         {"key":"ARM_SUBSCRIPTION_ID","value":Subscription_Id,"category":"env","hcl":false,"sensitive":true}
                      ];
 
-        // Header 
+        // Terraform Request Header 
         options = {
             headers: {
                 'Content-Type': 'application/vnd.api+json',
@@ -119,13 +116,11 @@ async function main() {
         // Step 7 - Check status and Update ServiceNow
         
          await sendFeedback();
-        
-        // Step 8 - Get Cost estimates
-
-        // Step 9 - Optionally apply plan
 
     } catch (error) {
         // Log Incident 
+        let sericeNowMessage = buildServiceNowFailureResponse("GitHub Pipeline Execution Failed:"+error.message);
+        invokeServiceNowScriptedRestAPI(sericeNowMessage);
         core.setFailed(error.message);
     }
 }
@@ -278,35 +273,43 @@ async function sendFeedback(){
     var checkStatus = true;
 
   do{
-    await sleep(10000);
+    await sleep(60000);
     const status = await checkRunStatus(runId);
 
    if("errored" == status){
         checkStatus = false;
         console.log("Plan execution failed");
         // Send Failed Response
+        let sericeNowMessage = buildServiceNowFailureResponse("Plan Execution Failed in TFE");
+        invokeServiceNowScriptedRestAPI(sericeNowMessage);
    }
    else if("discarded" == status) {
         checkStatus = false;
         console.log("Plan execution discarded manually");
         // Send Failed Response
+        let sericeNowMessage = buildServiceNowFailureResponse("Plan Execution discarded in TFE");
+        invokeServiceNowScriptedRestAPI(sericeNowMessage);
    }
    else if("policy_override" == status){
         checkStatus = false;
         console.log("Sentinel policy failed");
         // Send Failed Response
+        let sericeNowMessage = buildServiceNowFailureResponse("Sentinel Policy Failed");
+        invokeServiceNowScriptedRestAPI(sericeNowMessage);
     }
     else if("policy_checked" == status){
         checkStatus = false;
         console.log("Sentinel policy passed, ready to apply");
-        // Apply Plan
-        
+        // Apply Plan  
         await applyPlan();
     }
     else if("finished" == status || "applied" == status) {
         checkStatus = false;
         console.log("Plan execution completed successfully");
         // Send Success Response
+        let outputs = getOutputs();
+        let sericeNowMessage = buildServiceNowSuccessResponse(outputs);
+        invokeServiceNowScriptedRestAPI(sericeNowMessage);
 
     }
 
@@ -322,7 +325,7 @@ async function checkRunStatus(){
         const terraformRunStatusEndpoint = "https://"+terraformHost+"/api/v2/runs/"+runId;
         console.log("terraformRunStatusEndpoint:"+terraformRunStatusEndpoint);
         const res = await axios.get(terraformRunStatusEndpoint, options);
-        console.log("run response:"+res.data.data);
+        console.log("run response:"+JSON.stringify(res.data.data));
         return res.data.data.attributes.status;
     }
     catch(err){
@@ -399,4 +402,65 @@ async function processVariable(variable){
     }
 }
 
-main()
+async function getOutputs() {
+    try {
+        const stateVersionEndpoint = "https://"+terraformHost+"/api/v2/workspaces/"+workSpaceId+"/current-state-version";
+        console.log("stateVersionEndpoint:"+stateVersionEndpoint);
+        let terraformOutPuts = [];
+        const verResponse = await axios.get(stateVersionEndpoint,options);
+        for(  i = 0; i < verResponse.data.data.relationships.outputs.data.length; i++){
+            let stateId = verResponse.data.data.relationships.outputs.data[i].id;
+            let outputsEndpoint = "https://"+terraformHost+"/api/v2/state-version-outputs/"+stateId;
+            let res = await axios.get(outputsEndpoint,options);
+            var output = { "name": res.data.data.attributes.name, "value": res.data.data.attributes.value};
+            terraformOutPuts.push(output);
+        }
+        return terraformOutPuts;
+    }catch(err){
+        console.log("Error in getOutputs:"+err.message);
+        throw new Error(`Error in getOutputs${err.message}`);
+    }
+}
+
+
+async function buildServiceNowSuccessResponse(outputs){
+
+    let response =  {
+           "TaskId": workSpaceName,
+           "TFEResponse":{
+           "TFEWorkspaceId":workSpaceId,
+           "TFEWorkspaceName":workSpaceName,
+           "TFEOutputs": outputs  
+          },
+          "Message":"Success"       
+   }
+   return response;
+}
+
+async function buildServiceNowFailureResponse(reason){
+
+    let response =  {
+           "TaskId": workSpaceName,
+           "TFEResponse":{
+           "TFEWorkspaceId":workSpaceId,
+           "TFEWorkspaceName":workSpaceName,
+           "Reason": reason
+          },
+          "Message":"Failed"       
+   }
+   return response;
+}
+
+async function invokeServiceNowScriptedRestAPI(data){
+    try{
+    let res = await axios.post(serviceNowEndPoint,data);
+    console.log("service Now response:"+JSON.stringify(res.data));
+    }catch(err){
+        console.log("Error in invokeServiceNowScriptedRestAPI:"+err.message);
+        throw new Error(`Error in invokeServiceNowScriptedRestAPI${err.message}`);
+    }
+
+}
+
+
+main();
