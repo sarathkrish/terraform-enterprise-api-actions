@@ -44,6 +44,15 @@ inputs:
   serviceNowUrl:
      description: 'serviceNowUrl'
      required: true
+  platform:
+    description: 'platform eg: azure'
+    required: true
+  appName:
+    description: 'application name'
+    required: true
+  namingEngineEndpoint:
+    description: 'namingEngineEndpoint'
+    required: true
 runs:
   using: 'node12'
   main: 'index.js'

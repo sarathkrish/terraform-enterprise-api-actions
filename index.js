@@ -28,6 +28,9 @@ var pipelineConfigFile;
 var environment;
 var pipelineConfigVariable;
 var serviceNowEndPoint;
+var platform;
+var appName;
+var namingEngineEndpoint;
 //var serviceNowEndPoint = "https://dev63722.service-now.com/api/482432/tfe_notification_listener";
 
 
@@ -51,6 +54,9 @@ async function main() {
         pipelineConfigData = JSON.parse(fs.readFileSync(pipelineConfigFile));
         pipelineConfigVariable = pipelineConfigData.parameterMappings[environment];
         serviceNowEndPoint = core.getInput('serviceNowUrl');
+        platform = core.getInput('platform');
+        appName = core.getInput('appName');
+        namingEngineEndpoint = core.getInput('namingEngineEndpoint');
 
 
         // Log Input Variables
@@ -67,6 +73,9 @@ async function main() {
         console.log("pipelineConfigData:" + JSON.stringify(pipelineConfigData));
         console.log("Parameters:" + JSON.stringify(pipelineConfigData.parameterMappings[environment]));
         console.log("serviceNowEndPoint:" + serviceNowEndPoint);
+        console.log("platform:" + platform);
+        console.log("appName:" + appName);
+        console.log("namingEngineEndpoint:" + namingEngineEndpoint);
         console.log("**************Input*********************");
 
         // Azure Credentials as env params
@@ -395,6 +404,27 @@ async function processVariable(variable) {
             returnVariable = {
                 "key": variable.key,
                 "value": variable.value,
+                "category": variable.category,
+                "hcl": variable.hcl,
+                "sensitive": variable.sensitive
+            };
+            console.log("processVariable:" + JSON.stringify(returnVariable));
+            return returnVariable;
+        }
+        else if (variable.action && 'NameEngineLookup' === variable.action){
+            let namingApiRequest = {
+                "Platform":platform,
+                "Location":"useast",
+                "App":appName,
+                "Environment":environment,
+                "Resource":variable.resourceName,
+                "OS": variable.os
+            };
+            let nameEngineRespone = await axios.post(namingEngineEndpoint, namingApiRequest);
+            console.log("Naming Engine Response:"+JSON.stringify(nameEngineRespone));
+            returnVariable = {
+                "key": variable.key,
+                "value": nameEngineRespone.name,
                 "category": variable.category,
                 "hcl": variable.hcl,
                 "sensitive": variable.sensitive
