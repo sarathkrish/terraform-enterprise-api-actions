@@ -421,7 +421,7 @@ async function processVariable(variable) {
                 "OS": variable.os
             };
             let nameEngineRespone = await axios.post(namingEngineEndpoint, namingApiRequest);
-            console.log("Naming Engine Response:"+JSON.stringify(nameEngineRespone));
+            console.log("Naming Engine Response:"+JSON.stringify(nameEngineRespone.data));
             returnVariable = {
                 "key": variable.key,
                 "value": nameEngineRespone.name,
