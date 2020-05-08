@@ -424,7 +424,7 @@ async function processVariable(variable) {
             console.log("Naming Engine Response:"+JSON.stringify(nameEngineRespone.data));
             returnVariable = {
                 "key": variable.key,
-                "value": nameEngineRespone.name,
+                "value": nameEngineRespone.data.name,
                 "category": variable.category,
                 "hcl": variable.hcl,
                 "sensitive": variable.sensitive
